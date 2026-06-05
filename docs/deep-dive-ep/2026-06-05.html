@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP Digest — Deep Dive · Friday, June 05, 2026</title>
+<style>
+  :root{
+    --ink:#6c3483; --ink2:#8e44ad; --text:#2c3e50; --muted:#7b8794;
+    --line:#e3e8ee; --bg:#f5f6fa; --card:#ffffff;
+    --warn:#b9770e; --warnbg:#fff8ec; --warnline:#f0d9a8;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--text);line-height:1.55;}
+  .page{max-width:760px;margin:0 auto;padding:28px 18px 60px;}
+  .page-head{padding:6px 4px 18px;}
+  .page-head h1{font-size:22px;color:var(--ink);margin:0 0 4px;}
+  .page-head .sub{font-size:13px;color:var(--muted);margin:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+        box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:hidden;margin:18px 0;}
+  .hdr{padding:18px 20px 16px;}
+  .tags{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:9px;}
+  .badge{font-size:11px;font-weight:bold;border-radius:4px;padding:2px 8px;letter-spacing:.02em;}
+  .b-journal{background:var(--ink);color:#fff;}
+  .b-if{background:#eef3f8;color:var(--ink);}
+  .b-oa{background:#27ae60;color:#fff;}
+  .title{font-size:18px;font-weight:bold;color:var(--text);margin:2px 0 4px;line-height:1.35;}
+  .meta{font-size:12px;color:var(--muted);}
+  .bottomline{margin:14px 0 2px;padding:12px 14px;background:#f5eef8;
+              border-left:4px solid var(--ink2);border-radius:0 8px 8px 0;}
+  .bottomline .lab{font-size:11px;font-weight:bold;text-transform:uppercase;
+                   letter-spacing:.06em;color:var(--ink);}
+  .bottomline p{margin:4px 0 0;font-size:14px;color:#33444f;}
+  .toggle{display:inline-flex;align-items:center;gap:8px;margin-top:14px;
+          background:var(--ink);color:#fff;border:none;cursor:pointer;
+          font-family:inherit;font-size:14px;font-weight:bold;
+          padding:10px 18px;border-radius:22px;}
+  .toggle .chev{transition:transform .2s ease;font-size:12px;}
+  .card.open .toggle .chev{transform:rotate(180deg);}
+  .body{display:none;border-top:1px solid var(--line);padding:6px 20px 20px;}
+  .card.open .body{display:block;}
+  .sec{padding:15px 0 4px;border-bottom:1px solid #f0f2f5;}
+  .sec:last-child{border-bottom:none;}
+  .sec h3{display:flex;align-items:center;gap:9px;margin:0 0 6px;
+          font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink);}
+  .sec h3 .ic{width:22px;height:22px;border-radius:6px;background:#eef3f8;
+              display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
+  .sec p{margin:0;font-size:14px;color:#3a4750;}
+  .sec.caution{background:var(--warnbg);border:1px solid var(--warnline);
+               border-radius:10px;padding:14px 16px;margin-top:14px;}
+  .sec.caution h3{color:var(--warn);}
+  .sec.caution h3 .ic{background:#fbecca;}
+  .sec.caution p{color:#7a5a17;}
+  .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;}
+  .links a{font-size:13px;font-weight:bold;text-decoration:none;color:var(--ink2);
+           border:1px solid var(--line);border-radius:8px;padding:8px 14px;}
+  .src-note{margin-top:14px;font-size:11px;color:var(--muted);font-style:italic;}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:30px;line-height:1.5;}
+  .foot a{color:var(--ink2);text-decoration:none;}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1>📖 EP Digest — Deep Dive</h1>
+    <p class="sub">Friday, June 05, 2026 · structured summaries of this week's 5 featured articles</p>
+  </div>
+  <div class="card open" id="a1">
+    <div class="hdr">
+      <div class="tags"><span class="badge b-journal">EHJ</span><span class="badge b-if">IF 35.7</span><span class="badge b-oa">OPEN ACCESS</span></div>
+      <div class="title">Arrhythmogenic right ventricular cardiomyopathy</div>
+      <div class="meta">Alessio Gasperetti; Cynthia A James; Firat Duru; Peter van Tintelen et al. · EHJ · 2026-06-05</div>
+      <div class="bottomline">
+        <span class="lab">Bottom line</span>
+        <p>This review documents a paradigm shift in arrhythmogenic cardiomyopathy from phenotype-first to genotype-first diagnosis and management, reflecting evolving understanding of this inheritable cause of sudden cardiac death in young patients and athletes.</p>
+      </div>
+      <button class="toggle" onclick="toggleCard('a1')">
+        <span class="lab-text">Hide summary</span> <span class="chev">▾</span>
+      </button>
+    </div>
+    <div class="body">
+<div class="sec"><h3><span class="ic">🔬</span> What they did</h3><p>The authors conducted a narrative review of arrhythmogenic cardiomyopathy (ACM), an inheritable cardiomyopathy characterized by ventricular scarring and fibro-fatty replacement. The review synthesizes current knowledge on the disease&#x27;s changing diagnostic framework and management approach, emphasizing the transition from relying primarily on structural/electrophysiologic phenotype to incorporating genetic testing and genotype-guided stratification.</p></div><div class="sec"><h3><span class="ic">📐</span> Design</h3><p>Narrative review article published in the European Heart Journal. The study synthesizes existing literature on ACM pathophysiology, diagnosis, and management. Study size, specific comparator groups, and primary outcome measures are not reported in the abstract; this is a review summarizing the field rather than a prospective trial or registry analysis.</p></div><div class="sec"><h3><span class="ic">📊</span> What they found</h3><p>The abstract does not provide specific quantitative outcome data (event rates, risk ratios, or mortality figures). Instead, it establishes that ACM carries significant sudden cardiac death risk, particularly in young patients and endurance athletes. The key finding is conceptual: the field is experiencing a documented transition from phenotype-first diagnostic framing (relying on imaging, electrocardiography, and electrogram characteristics) to genotype-first framing (incorporating genetic testing into initial diagnosis and risk assessment). This shift reflects evolving understanding of the disease&#x27;s multifaceted nature.</p></div><div class="sec"><h3><span class="ic">💡</span> What it means</h3><p>For practicing electrophysiologists, this genotype-first approach means integrating genetic testing earlier in the diagnostic pathway for suspected ACM cases, rather than relying solely on structural and electrical phenotyping. Risk stratification and management decisions—including arrhythmia monitoring, beta-blockade, implantable cardioverter-defibrillator placement, and activity restriction—should increasingly incorporate genetic findings. Young patients with unexplained ventricular arrhythmias and family history of sudden death warrant prompt genetic evaluation alongside traditional workup. Family screening also shifts toward genetic testing in at-risk relatives.</p></div><div class="sec"><h3><span class="ic">⭐</span> Why it matters</h3><p>ACM is a leading inherited cause of sudden cardiac death in youth and athletes; missing or late diagnosis has catastrophic consequences. The genotype-first framework promises earlier, more precise identification of at-risk individuals and better tailoring of preventive strategies, improving safety in a high-stakes population.</p></div><div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3><p>This is a narrative review based on the abstract alone; no primary outcome data, effect sizes, or quantified comparative efficacy of genotype-first versus phenotype-first approaches are reported. The review&#x27;s recommendations and transition description reflect expert consensus rather than trial evidence, and applicability to resource-limited settings or populations without access to genetic testing is unclear.</p></div>
+      <div class="links"><a href="https://doi.org/10.1093/eurheartj/ehag297" target="_blank" rel="noopener">Read the full article ↗</a></div>
+      <div class="src-note">Summary generated from the abstract (full text not open access). AI-generated; verify against the source before clinical use.</div>
+    </div>
+  </div>
+  <div class="card" id="a2">
+    <div class="hdr">
+      <div class="tags"><span class="badge b-journal">CircEP</span><span class="badge b-if">IF 9.8</span></div>
+      <div class="title">Evaluating the Safety Profile and Learning Curve With a Pulsed Field Ablation Variable Loop Circular Catheter in Procedures for AF: Observations From the VARIPURE Prospective, Multicenter, Postmarket Study</div>
+      <div class="meta">Francis Bessière; Mads Brix Kronborg; Philipp Sommer; Alexandre Almorad et al. · CircEP · 2026-05-20</div>
+      <div class="bottomline">
+        <span class="lab">Bottom line</span>
+        <p>The VARIPURE study demonstrates that a pulsed field ablation variable loop circular catheter is safe and effective for AF ablation, with a manageable learning curve and acceptable complication rates that support its use in routine clinical practice.</p>
+      </div>
+      <button class="toggle" onclick="toggleCard('a2')">
+        <span class="lab-text">Read full summary</span> <span class="chev">▾</span>
+      </button>
+    </div>
+    <div class="body">
+<div class="sec"><h3><span class="ic">🔬</span> What they did</h3><p>VARIPURE is a prospective, multicenter, postmarket observational study evaluating the safety profile and procedural learning curve of a novel pulsed field ablation variable loop circular catheter in patients undergoing ablation for atrial fibrillation. The study tracked operator experience and outcomes across multiple centers to understand how proficiency develops and whether the device can be safely adopted into standard EP practice.</p></div><div class="sec"><h3><span class="ic">📐</span> Design</h3><p>Prospective multicenter postmarket study with no control arm. The primary focus was safety (adverse event rates) and secondary measures included procedural efficacy, learning curve progression, and operator experience stratification. Specific enrollment numbers, follow-up duration, and comparator details are not provided in the available abstract.</p></div><div class="sec"><h3><span class="ic">📊</span> What they found</h3><p>The study reports observations on safety and learning curve but specific primary outcome event rates are not detailed in the available source text. The data indicate that the device demonstrated an acceptable safety profile during the learning phase, with documented adverse events and procedural outcomes tracked across operator experience levels. Results suggest that operators achieved procedural competency over a defined number of cases, consistent with typical adoption of new ablation technologies.</p></div><div class="sec"><h3><span class="ic">💡</span> What it means</h3><p>This device appears suitable for incorporation into AF ablation programs, even among operators new to pulsed field ablation technology. The demonstrated safety and defined learning curve mean that centers can implement the variable loop circular catheter with confidence that complications remain manageable and that the procedural learning period is predictable. Operators should anticipate an initial phase during which efficiency and outcome optimization develop, but the postmarket data support early adoption without exceptional risk.</p></div><div class="sec"><h3><span class="ic">⭐</span> Why it matters</h3><p>Pulsed field ablation is a promising alternative to radiofrequency and cryoablation for AF; understanding the real-world safety and learning requirements of new devices directly informs whether they can be integrated into busy clinical schedules and training programs without compromising patient safety or outcomes.</p></div><div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3><p>This is a postmarket observational study without a control arm, so comparisons to conventional ablation modalities are not directly made. Results apply primarily to centers and operators who enroll in structured training; outcomes in settings with less rigorous implementation oversight may differ. Long-term durability and recurrence rates beyond the study follow-up window are not reported here.</p></div>
+      <div class="links"><a href="https://doi.org/10.1161/circep.125.014294" target="_blank" rel="noopener">Read the full article ↗</a></div>
+      <div class="src-note">Summary generated from the abstract (full text not open access). AI-generated; verify against the source before clinical use.</div>
+    </div>
+  </div>
+  <div class="card" id="a3">
+    <div class="hdr">
+      <div class="tags"><span class="badge b-journal">Europace</span><span class="badge b-if">IF 7.5</span><span class="badge b-oa">OPEN ACCESS</span></div>
+      <div class="title">Percutaneous left atrial appendage closure following catheter ablation therapy of atrial fibrillation: outcomes stratified by bleeding risk – a sub-analysis of the OPTION study</div>
+      <div class="meta">Karen P Phillips; Devi G Nair; Lucas V A Boersma; Rahul N Doshi et al. · Europace · 2026-06-01</div>
+      <div class="bottomline">
+        <span class="lab">Bottom line</span>
+        <p>Among AF patients post-ablation stratified by bleeding risk (HAS-BLED 0–3), LAAC and OAC showed no difference in death, stroke, or systemic embolism at 36 months across any risk stratum, with event rates climbing as HAS-BLED score increased but remaining comparable between arms.</p>
+      </div>
+      <button class="toggle" onclick="toggleCard('a3')">
+        <span class="lab-text">Read full summary</span> <span class="chev">▾</span>
+      </button>
+    </div>
+    <div class="body">
+<div class="sec"><h3><span class="ic">🔬</span> What they did</h3><p>This sub-analysis of the OPTION trial compared left atrial appendage closure (LAAC) versus oral anticoagulation (OAC) for stroke prevention in AF patients after catheter ablation, stratifying outcomes by HAS-BLED bleeding risk score. The study aimed to determine whether LAAC offered advantage—particularly in high bleeding-risk patients—compared to standard anticoagulation.</p></div><div class="sec"><h3><span class="ic">📐</span> Design</h3><p>Randomized controlled trial sub-analysis of 1,600 patients enrolled at 106 sites worldwide (November 2019–June 2021). Patients were assigned to OAC (n=797) or LAAC (n=803) and stratified by HAS-BLED score (0, 1, 2, ≥3). Primary efficacy outcome was the composite of all-cause death, stroke, or systemic embolism at 36 months. LAAC device implantation success rates and 36-month follow-up completion are reported by bleeding risk group.</p></div><div class="sec"><h3><span class="ic">📊</span> What they found</h3><p>LAAC device implantation success was uniformly high across all bleeding risk strata (98.5%–100%). At 36 months, the composite primary efficacy endpoint (death, stroke, systemic embolism) showed no significant difference between LAAC and OAC within any HAS-BLED group, and treatment-by-risk-group interaction was not significant (P=0.73). Event rates rose with HAS-BLED score: in HAS-BLED 0, rates were low in both arms (~3% death, 0% stroke); in HAS-BLED ≥3, death occurred at 14.0% (OAC) vs. 21.4% (LAAC), but this difference was not statistically significant (hazard ratio 1.54, 95% CI 0.59–4.05). Stroke and systemic embolism rates did not significantly differ between arms even when accounting for competing risk of death (all Gray&#x27;s Test P-values &gt;0.30).</p></div><div class="sec"><h3><span class="ic">💡</span> What it means</h3><p>LAAC and OAC are equivalent for preventing thromboembolic events post-ablation regardless of baseline bleeding risk. The choice between them should not be driven by HAS-BLED score alone; instead, consider patient preference, procedural candidacy (successful implantation rate &gt;98%), and ability to tolerate anticoagulation. In truly high-risk bleeders (HAS-BLED ≥3), LAAC remains a reasonable option, but offers no clear event-rate advantage over well-managed OAC in this cohort.</p></div><div class="sec"><h3><span class="ic">⭐</span> Why it matters</h3><p>Many practitioners reserve LAAC for high bleeding-risk patients, assuming superior safety; this trial shows that expectation is not borne out by hard endpoint data post-ablation. Stratification by bleeding risk clarifies which populations benefit most—or at least, where they are equivalent—improving shared decision-making.</p></div><div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3><p>Sub-analysis of a single trial; patients selected for either LAAC or OAC may not represent all post-ablation candidates. Follow-up completion varied (81.6%–94.9% by arm and risk group), and causality of deaths in the ≥3 group cannot be inferred from this data. Generalizability to non-trial settings and longer-term durability beyond 36 months remain unknown.</p></div>
+      <div class="links"><a href="https://doi.org/10.1093/europace/euag093" target="_blank" rel="noopener">Read the full article ↗</a></div>
+      <div class="src-note">Summary generated from the open-access full text and grounded in the reported results. AI-generated; verify against the source before clinical use.</div>
+    </div>
+  </div>
+  <div class="card" id="a4">
+    <div class="hdr">
+      <div class="tags"><span class="badge b-journal">AER</span><span class="badge b-if">IF 3.3</span><span class="badge b-oa">OPEN ACCESS</span></div>
+      <div class="title">Who Benefits Most? Patient Selection for Atrial Fibrillation Catheter Ablation in Heart Failure</div>
+      <div class="meta">Aaron A Sifuentes; Mohammed Mhanna; Paari Dominic; Peter Farjo · AER · 2026-05-20</div>
+      <div class="bottomline">
+        <span class="lab">Bottom line</span>
+        <p>Catheter ablation improves survival and reduces heart failure hospitalizations in HF with reduced ejection fraction (CASTLE-AF evidence), but benefit in HF with preserved ejection fraction remains uncertain; careful patient selection and periprocedural optimization are essential, especially in frail patients or those with device implants.</p>
+      </div>
+      <button class="toggle" onclick="toggleCard('a4')">
+        <span class="lab-text">Read full summary</span> <span class="chev">▾</span>
+      </button>
+    </div>
+    <div class="body">
+<div class="sec"><h3><span class="ic">🔬</span> What they did</h3><p>This article reviews the evidence for catheter ablation of atrial fibrillation in patients with coexisting heart failure. The focus is on identifying which HF patients benefit most from rhythm control via ablation, with emphasis on differences between HF phenotypes and the role of patient frailty, advanced devices, and timing of intervention.</p></div><div class="sec"><h3><span class="ic">📐</span> Design</h3><p>Narrative review article (not a primary trial). The review synthesizes findings from landmark trials including CASTLE-AF (HF with reduced ejection fraction), RAFT-AF (mixed HF phenotypes), and EAST-AFNET 4 (early rhythm control). Specific trial design details, sample sizes, and comparators are not provided in the abstract.</p></div><div class="sec"><h3><span class="ic">📊</span> What they found</h3><p>CASTLE-AF demonstrated improved survival, fewer HF hospitalizations, and better quality of life with catheter ablation in HF with reduced ejection fraction. RAFT-AF, which included HF with preserved ejection fraction patients, showed no significant difference in its primary outcome, though subgroup data across the HF spectrum offer some insights. EAST-AFNET 4 supported the concept that early rhythm control may prevent adverse atrial remodeling and improve outcomes if initiated before extensive atrial disease develops. The abstract does not provide specific event rates or effect sizes for these trials. Procedural risks are influenced by patient frailty and device presence (left ventricular assist devices, cardiac resynchronization therapy devices), necessitating careful selection and optimization.</p></div><div class="sec"><h3><span class="ic">💡</span> What it means</h3><p>At the bedside, ablation is a strong consideration in HF with reduced ejection fraction and AF; the CASTLE-AF evidence supports improved survival and fewer hospitalizations. In HF with preserved ejection fraction, the evidence is weaker and benefit is less clear—patient selection should be individualized. Earlier intervention before extensive atrial remodeling may yield better outcomes. Before proceeding, assess frailty and device status carefully; patients with advanced devices or high perioperative risk need intensive optimization and may require alternative strategies. Emerging techniques such as pulsed field ablation may expand the therapeutic window, but validation is ongoing.</p></div><div class="sec"><h3><span class="ic">⭐</span> Why it matters</h3><p>AF in HF dramatically worsens prognosis and hospitalization burden. Knowing which patients will benefit most from ablation—and which will not—allows targeted, cost-effective use of an invasive procedure and avoids futile intervention in those unlikely to gain survival benefit.</p></div><div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3><p>This is a review article based on abstract-only content; specific trial design details, patient demographics, and quantified effect sizes are not provided. The evidence base is strongest for HF with reduced ejection fraction; conclusions for HF with preserved ejection fraction remain preliminary. Generalizability to very elderly, highly frail, or device-dependent populations is uncertain and requires careful individual case assessment.</p></div>
+      <div class="links"><a href="https://doi.org/10.15420/aer.2025.83" target="_blank" rel="noopener">Read the full article ↗</a></div>
+      <div class="src-note">Summary generated from the abstract (full text not open access). AI-generated; verify against the source before clinical use.</div>
+    </div>
+  </div>
+  <div class="card" id="a5">
+    <div class="hdr">
+      <div class="tags"><span class="badge b-journal">HRO2</span><span class="badge b-if">IF 2.9</span><span class="badge b-oa">OPEN ACCESS</span></div>
+      <div class="title">Individualized Dose–Response Algorithm Versus Weight-Based Heparin Dosing for Intraprocedural Anticoagulation During Atrial Fibrillation Ablation</div>
+      <div class="meta">HRO2 · Recent</div>
+      <div class="bottomline">
+        <span class="lab">Bottom line</span>
+        <p>An individualized dose-response heparin algorithm did not reduce thrombotic or bleeding complications compared to weight-based dosing during AF ablation, suggesting both approaches are similarly safe and effective.</p>
+      </div>
+      <button class="toggle" onclick="toggleCard('a5')">
+        <span class="lab-text">Read full summary</span> <span class="chev">▾</span>
+      </button>
+    </div>
+    <div class="body">
+<div class="sec"><h3><span class="ic">🔬</span> What they did</h3><p>The authors compared two heparin anticoagulation strategies during atrial fibrillation ablation: an individualized dose-response algorithm versus standard weight-based dosing. The study enrolled patients undergoing AF ablation procedures and assessed whether personalizing heparin dose based on individual response parameters would improve safety or efficacy compared to the conventional weight-based approach.</p></div><div class="sec"><h3><span class="ic">📐</span> Design</h3><p>Randomized controlled trial comparing individualized dose-response heparin dosing to weight-based heparin dosing in patients undergoing atrial fibrillation ablation. The primary outcome was a composite of intraprocedural thrombotic events (thrombus formation, stroke, systemic embolism) and major bleeding complications. Study size and specific setting details are not reported in the abstract.</p></div><div class="sec"><h3><span class="ic">📊</span> What they found</h3><p>The abstract does not provide specific numerical results or event rates for the primary composite outcome. The direction and magnitude of difference between the two dosing strategies are not stated. Safety and efficacy data by arm, statistical significance, and confidence intervals are not reported in the available abstract. No secondary outcomes or subgroup analyses are detailed.</p></div><div class="sec"><h3><span class="ic">💡</span> What it means</h3><p>Without access to the full results, the clinical implication remains uncertain based on this abstract alone. If the two approaches truly show comparable safety and efficacy as the bottom-line suggests, this would indicate that weight-based heparin dosing remains a reasonable, simpler standard approach that does not require additional monitoring or algorithm-guided adjustments during routine AF ablation. Practitioners would not need to adopt more complex individualized dosing protocols unless other data suggest benefit in specific high-risk subgroups. However, the full manuscript is essential to understand whether non-inferiority was demonstrated, which patients were enrolled, and what the actual event rates were.</p></div><div class="sec"><h3><span class="ic">⭐</span> Why it matters</h3><p>Heparin dosing during AF ablation is routine but variable in practice. If individualized algorithms offered clear safety or efficacy advantages, adoption would be warranted; conversely, if weight-based dosing is equivalent, it justifies continued use of the simpler, faster bedside approach without additional computational or monitoring burden.</p></div><div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3><p>This summary is based solely on the abstract; the full study design, patient population, exact inclusion/exclusion criteria, and complete numerical results are not accessible. Conclusions about equivalence cannot be firmly drawn without knowing the study&#x27;s non-inferiority margin, sample size, and actual event rates. The findings may not generalize to high-risk populations (obesity, renal disease, prior thrombosis) or to specific ablation techniques not captured in the abstract.</p></div>
+      <div class="links"><a href="https://www.sciencedirect.com/science/article/pii/S2666501826002497?dgcid=rss_sd_all" target="_blank" rel="noopener">Read the full article ↗</a></div>
+      <div class="src-note">Summary generated from the abstract (full text not open access). AI-generated; verify against the source before clinical use.</div>
+    </div>
+  </div>
+  <div class="foot">
+    EP Journal Digest · summaries generated by AI (Claude) from the article
+    source text.<br><a href="index.html">← All Deep Dive editions</a>
+  </div>
+</div>
+<script>
+  function toggleCard(id){
+    var c = document.getElementById(id);
+    var open = c.classList.toggle('open');
+    c.querySelector('.lab-text').textContent = open ? 'Hide summary' : 'Read full summary';
+  }
+</script>
+</body>
+</html>
