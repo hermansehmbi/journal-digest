@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP Digest — Weekly Review & Self-Assessment (June 05, 2026)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root { --navy:#6c3483; --blue:#8e44ad; --green:#1e8449; --red:#c0392b;
+          --bg:#f4f6f9; --card:#ffffff; --line:#e3e8ee; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+         background:var(--bg); color:#2c3e50; font-size:16px; line-height:1.6; }
+  header { background:linear-gradient(135deg,var(--navy),var(--blue)); color:#fff;
+           padding:28px 20px; text-align:center; }
+  header h1 { margin:0; font-size:25px; font-family:Georgia,serif; }
+  header p { margin:8px 0 0; font-size:15px; opacity:.92; }
+  main { max-width:780px; margin:0 auto; padding:18px 16px 70px; }
+  .intro { background:#eef5fb; border:1px solid #d6e6f5; border-radius:10px;
+           padding:16px 18px; font-size:15px; color:#34516b; margin-bottom:20px; }
+  .question { background:var(--card); border:1px solid var(--line); border-radius:12px;
+             padding:20px 20px 18px; margin-bottom:18px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .qnum { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+          color:var(--blue); }
+  .qnum .of { color:#9bb1c4; font-weight:600; }
+  .qtext { font-size:18px; font-weight:600; margin:8px 0 16px; line-height:1.5; }
+  .option { display:flex; align-items:flex-start; gap:12px; padding:13px 14px;
+            border:1px solid var(--line); border-radius:9px; margin:9px 0; cursor:pointer;
+            transition:background .12s,border-color .12s; }
+  .option:hover { background:#f7fafd; }
+  .option input { margin-top:4px; flex:none; width:18px; height:18px; }
+  .opt-letter { font-weight:700; color:var(--navy); flex:none; font-size:16px; }
+  .opt-text { font-size:16px; }
+  .option.correct { border-color:var(--green); background:#eafaf1; }
+  .option.incorrect { border-color:var(--red); background:#fdedec; }
+  .result { margin-top:14px; padding:14px 16px; border-radius:9px; font-size:15.5px;
+            line-height:1.65; }
+  .result.right { background:#eafaf1; border:1px solid #abe2c1; }
+  .result.wrong { background:#fdedec; border:1px solid #f3b7b1; }
+  .result .verdict { font-weight:700; display:block; margin-bottom:6px; font-size:16px; }
+  .result .src { display:block; margin-top:10px; font-size:13.5px; color:#5b6b7a; }
+  .result .src a { color:var(--blue); }
+  .actions { position:sticky; bottom:0; background:linear-gradient(180deg,rgba(244,246,249,0),var(--bg) 32%);
+             padding:18px 0 10px; text-align:center; }
+  button { font:inherit; border:none; border-radius:26px; padding:15px 30px; font-weight:700;
+           font-size:16px; cursor:pointer; }
+  .btn-submit { background:var(--blue); color:#fff; }
+  .btn-submit:disabled { background:#9bb9d1; cursor:default; }
+  .btn-cert { background:var(--green); color:#fff; margin-left:8px; }
+  .scorebar { display:none; background:var(--navy); color:#fff; border-radius:12px;
+              padding:18px 20px; text-align:center; margin-bottom:20px; }
+  .scorebar .pct { font-size:34px; font-weight:800; }
+  .scorebar .detail { font-size:15px; opacity:.92; margin-top:2px; }
+  .namebox { display:none; margin-top:16px; }
+  .namebox label { display:block; font-size:14px; opacity:.92; margin-bottom:7px; }
+  .namebox input { font:inherit; font-size:16px; padding:12px 14px; border-radius:8px;
+                   border:1px solid var(--line); width:340px; max-width:86%; color:#2c3e50; }
+  .certinfo { display:none; margin-top:12px; font-size:13px; opacity:.92; font-family:monospace; }
+  .warn { color:var(--red); font-size:15px; margin-top:12px; display:none; }
+  footer { text-align:center; font-size:12.5px; color:#9bb1c4; padding:26px 16px 44px; }
+  footer a { color:#9bb1c4; }
+  @media (max-width:520px) {
+    .qtext { font-size:17px; }
+    .btn-cert { margin:10px 0 0; }
+    .actions button { width:100%; }
+    .namebox input { width:100%; max-width:100%; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>&#127891; EP Digest — Weekly Review &amp; Self-Assessment</h1>
+    <p>June 05, 2026 · 5 single-best-answer questions</p>
+  </header>
+  <main>
+    <div class="scorebar" id="scorebar">
+      <div class="pct" id="scorePct">0%</div>
+      <div class="detail" id="scoreDetail"></div>
+      <div class="namebox" id="namebox">
+        <label for="participant">Enter your full name &amp; credentials for the certificate</label>
+        <input type="text" id="participant" placeholder="e.g. Dr. Jane Smith, MD, FRCPC" autocomplete="name">
+      </div>
+      <div class="certinfo" id="certinfo"></div>
+    </div>
+
+    <div class="intro">
+      Answer all the questions, then press <strong>Submit Test</strong> to see your score and the
+      explanations. This is a self-assessment tool to support your own learning. Time spent reading
+      and reflecting on the literature may be eligible for self-reporting under
+      <strong>RCPSC MOC Section&nbsp;2 (Self-Learning)</strong> — confirm your own eligibility.
+    </div>
+
+    <form id="quizForm">
+    <section class="question" id="card0" data-index="0">
+      <div class="qnum">Question 1 <span class="of">of 5</span></div>
+      <div class="qtext">A 28-year-old competitive endurance athlete presents with recurrent syncope during training. ECG shows epsilon waves and inverted T waves in leads V1–V3. Echocardiography reveals mild right ventricular dilatation with regional wall motion abnormality. Genetic testing identifies a pathogenic variant in DSP (desmoplakin). Family history is significant for sudden cardiac death in a cousin at age 31. Based on the current diagnostic paradigm, what is the most appropriate next step in management?</div>
+      <div class="options">
+        <label class="option" for="q0A">
+          <input type="radio" id="q0A" name="q0" value="A">
+          <span class="opt-letter">A</span>
+          <span class="opt-text">Perform electrophysiology study to induce ventricular arrhythmias before making any therapeutic decisions, as genotype alone is insufficient to guide ICD placement.</span>
+        </label>
+        <label class="option" for="q0B">
+          <input type="radio" id="q0B" name="q0" value="B">
+          <span class="opt-letter">B</span>
+          <span class="opt-text">Defer genetic counseling; rely solely on the ECG and echo findings to determine ICD candidacy, as genetic testing has not yet proven to guide management decisions in arrhythmogenic cardiomyopathy.</span>
+        </label>
+        <label class="option" for="q0C">
+          <input type="radio" id="q0C" name="q0" value="C">
+          <span class="opt-letter">C</span>
+          <span class="opt-text">Incorporate the genetic finding into early risk stratification; counsel on activity restriction, consider ICD implantation regardless of current symptom burden, and perform cascade genetic screening in family members.</span>
+        </label>
+        <label class="option" for="q0D">
+          <input type="radio" id="q0D" name="q0" value="D">
+          <span class="opt-letter">D</span>
+          <span class="opt-text">Initiate empiric beta-blockade and restrict athletic activity pending repeat imaging in 12 months to confirm the phenotype before considering ICD placement.</span>
+        </label>
+      </div>
+      <div class="result" id="result0" hidden></div>
+    </section>
+    <section class="question" id="card1" data-index="1">
+      <div class="qnum">Question 2 <span class="of">of 5</span></div>
+      <div class="qtext">You are performing a pulsed field ablation procedure for paroxysmal atrial fibrillation in a 62-year-old woman using a novel variable loop circular catheter for the first time at your institution. At the beginning of the second pulmonary vein isolation, the ablation catheter suddenly becomes difficult to torque and appears to have lost stability in the left atrium. Fluoroscopy shows apparent entanglement with the esophageal temperature probe. What is the best next step?</div>
+      <div class="options">
+        <label class="option" for="q1A">
+          <input type="radio" id="q1A" name="q1" value="A">
+          <span class="opt-letter">A</span>
+          <span class="opt-text">Terminate the procedure and refer the patient to a high-volume center with more operator experience using this technology to complete the ablation.</span>
+        </label>
+        <label class="option" for="q1B">
+          <input type="radio" id="q1B" name="q1" value="B">
+          <span class="opt-letter">B</span>
+          <span class="opt-text">Immediately withdraw the ablation catheter under gentle traction while monitoring for any equipment displacement, reposition the esophageal probe, and restart the procedure only after confirming stable catheter position and probe location.</span>
+        </label>
+        <label class="option" for="q1C">
+          <input type="radio" id="q1C" name="q1" value="C">
+          <span class="opt-letter">C</span>
+          <span class="opt-text">Reposition the esophageal temperature probe under fluoroscopy and resume ablation; esophageal probe entanglement is expected during the learning curve and does not require procedure termination.</span>
+        </label>
+        <label class="option" for="q1D">
+          <input type="radio" id="q1D" name="q1" value="D">
+          <span class="opt-letter">D</span>
+          <span class="opt-text">Continue ablation despite the entanglement because the VARIPURE study data indicate that new operators can safely navigate procedural difficulties without increasing complication rates.</span>
+        </label>
+      </div>
+      <div class="result" id="result1" hidden></div>
+    </section>
+    <section class="question" id="card2" data-index="2">
+      <div class="qnum">Question 3 <span class="of">of 5</span></div>
+      <div class="qtext">A 72-year-old man with AF and a HAS-BLED score of 3 (prior stroke, hypertension, age &gt;60, labile INR on warfarin, diabetes) has undergone successful catheter ablation for paroxysmal AF. He asks whether he should undergo left atrial appendage closure to reduce future stroke risk given his bleeding risk. You review the OPTION trial sub-analysis. What does the evidence indicate regarding his optimal antithrombotic strategy?</div>
+      <div class="options">
+        <label class="option" for="q2A">
+          <input type="radio" id="q2A" name="q2" value="A">
+          <span class="opt-letter">A</span>
+          <span class="opt-text">LAAC and OAC are equivalent for preventing thromboembolic events (death, stroke, systemic embolism) even in patients with HAS-BLED ≥3; the choice should be individualized based on patient preference, procedural candidacy, and ability to tolerate anticoagulation rather than HAS-BLED score alone.</span>
+        </label>
+        <label class="option" for="q2B">
+          <input type="radio" id="q2B" name="q2" value="B">
+          <span class="opt-letter">B</span>
+          <span class="opt-text">The OPTION trial showed that LAAC significantly reduces stroke risk compared to OAC in high bleeding-risk patients, supporting LAAC as first-line for HAS-BLED ≥3.</span>
+        </label>
+        <label class="option" for="q2C">
+          <input type="radio" id="q2C" name="q2" value="C">
+          <span class="opt-letter">C</span>
+          <span class="opt-text">OAC is clearly superior in the HAS-BLED ≥3 group post-ablation, and LAAC should be reserved for patients who are anticoagulation-intolerant.</span>
+        </label>
+        <label class="option" for="q2D">
+          <input type="radio" id="q2D" name="q2" value="D">
+          <span class="opt-letter">D</span>
+          <span class="opt-text">LAAC is superior to OAC in patients with HAS-BLED ≥3 and should be strongly recommended because high bleeding-risk patients derive the greatest absolute risk reduction.</span>
+        </label>
+      </div>
+      <div class="result" id="result2" hidden></div>
+    </section>
+    <section class="question" id="card3" data-index="3">
+      <div class="qnum">Question 4 <span class="of">of 5</span></div>
+      <div class="qtext">A 58-year-old man with heart failure with reduced ejection fraction (EF 32%) due to ischemic cardiomyopathy presents with persistent AF. He is frail, with a Fried frailty score of 4/5, multiple comorbidities, and a recently implanted cardiac resynchronization therapy defibrillator (CRT-D). He asks whether AF ablation would improve his heart failure outcomes. Based on current evidence, what is the most appropriate counseling?</div>
+      <div class="options">
+        <label class="option" for="q3A">
+          <input type="radio" id="q3A" name="q3" value="A">
+          <span class="opt-letter">A</span>
+          <span class="opt-text">Ablation is indicated only in HF with preserved ejection fraction; HF with reduced ejection fraction patients should be managed medically to avoid procedural complications.</span>
+        </label>
+        <label class="option" for="q3B">
+          <input type="radio" id="q3B" name="q3" value="B">
+          <span class="opt-letter">B</span>
+          <span class="opt-text">Evidence supports ablation in HF with reduced ejection fraction, but careful assessment of frailty and CRT-D presence is essential before proceeding; this patient&#x27;s advanced frailty and recent device implantation warrant individualized risk–benefit discussion, optimization of medical therapy, and consideration of timing or candidacy for the procedure.</span>
+        </label>
+        <label class="option" for="q3C">
+          <input type="radio" id="q3C" name="q3" value="C">
+          <span class="opt-letter">C</span>
+          <span class="opt-text">Ablation offers no benefit in HF with reduced ejection fraction patients and should not be offered; medical rate control and optimal medical therapy are the only evidence-based approaches.</span>
+        </label>
+        <label class="option" for="q3D">
+          <input type="radio" id="q3D" name="q3" value="D">
+          <span class="opt-letter">D</span>
+          <span class="opt-text">Ablation is strongly recommended for all HF with reduced ejection fraction patients with AF because CASTLE-AF showed improved survival and reduced hospitalizations; proceed with ablation regardless of frailty or device status.</span>
+        </label>
+      </div>
+      <div class="result" id="result3" hidden></div>
+    </section>
+    <section class="question" id="card4" data-index="4">
+      <div class="qnum">Question 5 <span class="of">of 5</span></div>
+      <div class="qtext">You are designing a quality-improvement initiative to standardize heparin anticoagulation during AF ablation procedures at your institution. Currently, your laboratory uses weight-based dosing for all patients. You have access to a new individualized dose-response algorithm based on activated clotting time (ACT) response. Based on available evidence, what is the most appropriate next step?</div>
+      <div class="options">
+        <label class="option" for="q4A">
+          <input type="radio" id="q4A" name="q4" value="A">
+          <span class="opt-letter">A</span>
+          <span class="opt-text">Discontinue heparin-based anticoagulation entirely and switch to direct oral anticoagulants for intraprocedural anticoagulation, as the trial data suggest that neither heparin strategy is safe.</span>
+        </label>
+        <label class="option" for="q4B">
+          <input type="radio" id="q4B" name="q4" value="B">
+          <span class="opt-letter">B</span>
+          <span class="opt-text">Immediately transition the entire AF ablation program to individualized dose-response heparin dosing because it is superior to weight-based dosing for reducing thrombotic and bleeding complications.</span>
+        </label>
+        <label class="option" for="q4C">
+          <input type="radio" id="q4C" name="q4" value="C">
+          <span class="opt-letter">C</span>
+          <span class="opt-text">Implement the individualized algorithm as the new standard because it is more complex and therefore more precise, even though the trial did not show a clear superiority.</span>
+        </label>
+        <label class="option" for="q4D">
+          <input type="radio" id="q4D" name="q4" value="D">
+          <span class="opt-letter">D</span>
+          <span class="opt-text">Maintain weight-based heparin dosing as the standard approach because a randomized trial showed that individualized dose-response algorithms do not reduce thrombotic or bleeding complications compared to weight-based dosing, and weight-based dosing remains a reasonable, simpler standard approach.</span>
+        </label>
+      </div>
+      <div class="result" id="result4" hidden></div>
+    </section>
+    </form>
+
+    <p class="warn" id="warn">Please answer all questions before submitting.</p>
+
+    <div class="actions">
+      <button type="button" class="btn-submit" id="submitBtn">Submit Test</button>
+      <button type="button" class="btn-cert" id="certBtn" style="display:none;">Download Certificate</button>
+    </div>
+  </main>
+  <footer>
+    EP Journal Digest · AI-generated self-assessment · Not affiliated with any journal.<br>
+    <a href="index.html">&#8592; All weekly quizzes</a>
+  </footer>
+
+<script>
+
+function ad2(n){ return ('0' + n).slice(-2); }
+
+// FNV-1a 32-bit hash -> short uppercase base36 code (deterministic & auditable).
+function adHash(str){
+  var h = 0x811c9dc5 >>> 0;
+  for (var i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return ('0000000' + h.toString(36).toUpperCase()).slice(-7);
+}
+
+function makeCertId(d){
+  var rnd = Math.floor(Math.random() * 0x10000).toString(16).toUpperCase();
+  rnd = ('000' + rnd).slice(-4);
+  return 'AD-' + d.getFullYear() + ad2(d.getMonth() + 1) + ad2(d.getDate()) + '-' + rnd;
+}
+
+function adVerCode(name, ymd, score, total, certId){
+  return adHash(name + '|' + ymd + '|' + score + '/' + total + '|' + certId);
+}
+
+function drawCorners(doc, x1, y1, x2, y2, color){
+  doc.setDrawColor(color[0], color[1], color[2]);
+  doc.setLineWidth(1);
+  var s = 26, o = 44;
+  var pts = [[x1+o,y1+o,1,1],[x2-o,y1+o,-1,1],[x1+o,y2-o,1,-1],[x2-o,y2-o,-1,-1]];
+  for (var i = 0; i < pts.length; i++){
+    var px = pts[i][0], py = pts[i][1], dx = pts[i][2], dy = pts[i][3];
+    doc.line(px, py, px + dx * s, py);
+    doc.line(px, py, px, py + dy * s);
+    doc.circle(px, py, 2.2, 'F');
+    doc.circle(px + dx * s, py, 1.4, 'F');
+    doc.circle(px, py + dy * s, 1.4, 'F');
+  }
+}
+
+function drawSeal(doc, cx, cy, gold, wax){
+  // Rosette of petals, then a stamped disc with initials.
+  doc.setFillColor(wax[0], wax[1], wax[2]);
+  var R = 30;
+  for (var a = 0; a < 360; a += 24){
+    var r = a * Math.PI / 180;
+    var x1 = cx + Math.cos(r) * R,            y1 = cy + Math.sin(r) * R;
+    var x2 = cx + Math.cos(r + 0.27) * (R*0.66), y2 = cy + Math.sin(r + 0.27) * (R*0.66);
+    var x3 = cx + Math.cos(r - 0.27) * (R*0.66), y3 = cy + Math.sin(r - 0.27) * (R*0.66);
+    doc.triangle(x1, y1, x2, y2, x3, y3, 'F');
+  }
+  doc.setFillColor(wax[0], wax[1], wax[2]);
+  doc.circle(cx, cy, R * 0.72, 'F');
+  doc.setDrawColor(gold[0], gold[1], gold[2]);
+  doc.setLineWidth(1.3); doc.circle(cx, cy, R * 0.72, 'S');
+  doc.setLineWidth(0.7); doc.circle(cx, cy, R * 0.55, 'S');
+  doc.setFont('times', 'bold'); doc.setFontSize(12); doc.setTextColor(255, 246, 236);
+  doc.text('AD', cx, cy - 1, {align:'center'});
+  doc.setFontSize(5); doc.text('SELF-ASSESSMENT', cx, cy + 9, {align:'center'});
+}
+
+// opts: {name, score, total, completedAt(Date), certId?, verCode?}
+// Returns {certId, verCode}. Builds and downloads the PDF.
+function generateCertificate(opts){
+  var ns = window.jspdf || {};
+  var JsPDF = ns.jsPDF;
+  if (!JsPDF){ alert('Certificate library failed to load. Check your internet connection and try again.'); return null; }
+
+  var name  = (opts.name || '').trim();
+  var score = opts.score, total = opts.total;
+  var now   = opts.completedAt || new Date();
+  var certId = opts.certId || makeCertId(now);
+  var ymd = now.getFullYear() + '-' + ad2(now.getMonth() + 1) + '-' + ad2(now.getDate());
+  var pct = Math.round(score / total * 100);
+  var ver = opts.verCode || adVerCode(name, ymd, score, total, certId);
+  var dateStr = now.toLocaleDateString(undefined, {year:'numeric', month:'long', day:'numeric'});
+  var timeStr = now.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+  var stamp = dateStr + ' at ' + timeStr;
+  var weekOf = (opts.weekOf || dateStr);   // the literature week this self-assessment covers
+
+  var doc = new JsPDF({orientation:'landscape', unit:'pt', format:'letter'});
+  var W = doc.internal.pageSize.getWidth();
+  var H = doc.internal.pageSize.getHeight();
+  var navy = [26,82,118], gold = [176,141,87], ink = [44,62,80], wax = [140,32,32];
+
+  // Parchment background
+  doc.setFillColor(252, 250, 244); doc.rect(0, 0, W, H, 'F');
+
+  // Decorative double border
+  doc.setDrawColor(navy[0], navy[1], navy[2]); doc.setLineWidth(4);
+  doc.rect(24, 24, W - 48, H - 48);
+  doc.setDrawColor(gold[0], gold[1], gold[2]); doc.setLineWidth(1.4);
+  doc.rect(34, 34, W - 68, H - 68);
+  drawCorners(doc, 24, 24, W - 24, H - 24, gold);
+
+  // Title + flourish
+  doc.setFont('times', 'bold'); doc.setFontSize(34); doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.text('Certificate of Completion', W / 2, 108, {align:'center'});
+  doc.setDrawColor(gold[0], gold[1], gold[2]); doc.setLineWidth(1);
+  doc.line(W / 2 - 160, 122, W / 2 + 160, 122);
+  doc.circle(W / 2 - 168, 122, 2, 'F'); doc.circle(W / 2 + 168, 122, 2, 'F');
+
+  doc.setFont('times', 'italic'); doc.setFontSize(16); doc.setTextColor(ink[0], ink[1], ink[2]);
+  doc.text('Self-Assessment Activity', W / 2, 148, {align:'center'});
+
+  doc.setFont('times', 'normal'); doc.setFontSize(13);
+  doc.text('This certifies that', W / 2, 192, {align:'center'});
+
+  doc.setFont('times', 'bold'); doc.setFontSize(26); doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.text(name || '—', W / 2, 226, {align:'center'});
+  var nameW = Math.min(460, Math.max(220, doc.getTextWidth(name || '—') + 70));
+  doc.setDrawColor(gold[0], gold[1], gold[2]); doc.setLineWidth(0.8);
+  doc.line(W / 2 - nameW / 2, 236, W / 2 + nameW / 2, 236);
+
+  doc.setFont('times', 'normal'); doc.setFontSize(13); doc.setTextColor(ink[0], ink[1], ink[2]);
+  doc.text('completed a self-assessment based on the week of ' + weekOf, W / 2, 266, {align:'center'});
+  doc.text('electrophysiology literature (' + total + ' questions), with a score of', W / 2, 284, {align:'center'});
+
+  doc.setFont('times', 'bold'); doc.setFontSize(20); doc.setTextColor(30, 110, 70);
+  doc.text(score + ' / ' + total + '    (' + pct + '%)', W / 2, 314, {align:'center'});
+
+  doc.setFont('times', 'normal'); doc.setFontSize(12); doc.setTextColor(ink[0], ink[1], ink[2]);
+  doc.text('Completed: ' + stamp, W / 2, 340, {align:'center'});
+
+  drawSeal(doc, W / 2, 384, gold, wax);
+
+  // Bottom block — everything sits clearly INSIDE the inner border (which is at
+  // H-34) with margin. Disclaimer is drawn line-by-line, then the ID row, so
+  // nothing overruns or hides behind the frame.
+  doc.setFont('times', 'italic'); doc.setFontSize(8.5); doc.setTextColor(110, 110, 110);
+  var disc = 'This is a self-assessment completion record. Time spent reading and reflecting on the literature may be eligible for self-reporting under RCPSC MOC Section 2 (Self-Learning); confirm your own eligibility.';
+  var lines = doc.splitTextToSize(disc, W - 160);
+  var lh = 11;                          // line spacing (pt)
+  var discLast = H - 74;                // baseline of the LAST disclaimer line
+  var discFirst = discLast - (lines.length - 1) * lh;
+  for (var li = 0; li < lines.length; li++){
+    doc.text(lines[li], W / 2, discFirst + li * lh, {align:'center'});
+  }
+
+  // Certificate ID (left) + verification code (right) on one row, above the frame.
+  doc.setFont('courier', 'normal'); doc.setFontSize(9.5); doc.setTextColor(ink[0], ink[1], ink[2]);
+  doc.text('Certificate ID:  ' + certId, 72, H - 50);
+  doc.text('Verification:  ' + ver, W - 72, H - 50, {align:'right'});
+
+  doc.save('Certificate_of_Completion_' + certId + '.pdf');
+  return {certId: certId, verCode: ver};
+}
+
+
+  var QUIZ = [{"correct": "C", "rationale": "The correct answer is to incorporate the genetic finding into early risk stratification and proceed with activity restriction and ICD consideration. The EHJY article 'Arrhythmogenic right ventricular cardiomyopathy' (https://doi.org/10.1093/eurheartj/ehag297) documents a paradigm shift from phenotype-first to genotype-first diagnosis and management of arrhythmogenic cardiomyopathy. In this young athlete with a pathogenic desmoplakin variant, family history of sudden death, and electrical/structural phenotype, genetic testing should drive early risk assessment and management rather than serving as a confirmatory test after imaging abnormalities are established. The genotype-first approach means integrating genetic findings into the diagnostic pathway earlier and using them to guide decisions on activity restriction, monitoring, and implantable device therapy\u2014not delaying these decisions pending additional phenotypic confirmation.\n\nWhy the other options are incorrect: Option D represents the older phenotype-first approach that relied on imaging progression before intervention; this is precisely the paradigm the field is moving away from. Option B incorrectly suggests that genetic testing is not yet practice-changing, contradicting the stated paradigm shift. Option A invokes provocation testing as a prerequisite for ICD decision-making, but the article emphasizes that genotype-guided stratification should inform decisions earlier in the diagnostic pathway, particularly in high-risk family history settings.", "source_article": "Arrhythmogenic right ventricular cardiomyopathy", "source_journal": "EHJ", "source_url": "https://doi.org/10.1093/eurheartj/ehag297"}, {"correct": "B", "rationale": "The correct answer is to withdraw the ablation catheter under gentle traction, reposition the esophageal probe, and restart only after confirming stable positioning. While the VARIPURE study ('Evaluating the Safety Profile and Learning Curve With a Pulsed Field Ablation Variable Loop Circular Catheter in Procedures for AF: Observations From the VARIPURE Prospective, Multicenter, Postmarket Study,' CircEP, https://doi.org/10.1161/circep.125.014294) demonstrates that the variable loop circular catheter has an acceptable safety profile and manageable learning curve, this does not mean procedural complications should be ignored or worked around. The study shows that operators achieve competency over a defined number of cases and that the learning curve is predictable, but this presupposes proper technique and problem-solving during procedures. Equipment entanglement is a mechanical problem that must be resolved before proceeding; continuing ablation with a catheter improperly positioned due to probe entanglement creates risk of esophageal injury, catheter perforation, and loss of ablation efficacy. Safe adoption of the technology requires vigilance for procedural problems and appropriate corrective action.\n\nWhy the other options are incorrect: Option C falsely normalizes esophageal probe entanglement as an expected learning-curve phenomenon; it is not, and should be resolved. Option D misinterprets the VARIPURE safety data to mean that new operators can ignore mechanical complications\u2014the study supports safe adoption provided proper technique and complication management are employed. Option A is unnecessarily pessimistic; a single procedural obstacle does not warrant termination or referral if the operator can safely resolve it.", "source_article": "Evaluating the Safety Profile and Learning Curve With a Pulsed Field Ablation Variable Loop Circular Catheter in Procedures for AF: Observations From the VARIPURE Prospective, Multicenter, Postmarket Study", "source_journal": "CircEP", "source_url": "https://doi.org/10.1161/circep.125.014294"}, {"correct": "A", "rationale": "The correct answer is that LAAC and OAC are equivalent for preventing thromboembolic events regardless of HAS-BLED score, and the choice should be individualized. The OPTION study sub-analysis ('Percutaneous left atrial appendage closure following catheter ablation therapy of atrial fibrillation: outcomes stratified by bleeding risk \u2013 a sub-analysis of the OPTION study,' Europace, https://doi.org/10.1093/europace/euag093) compared LAAC versus OAC stratified by HAS-BLED score in 1,600 post-ablation AF patients. At 36 months, the composite primary efficacy endpoint (death, stroke, systemic embolism) showed no significant difference between LAAC and OAC within any HAS-BLED group, with no significant treatment-by-risk-group interaction (P=0.73). LAAC device implantation success was uniformly high across all bleeding risk strata (98.5%\u2013100%). The study explicitly concludes that LAAC and OAC are equivalent for preventing thromboembolic events post-ablation regardless of baseline bleeding risk, and that the choice between them should not be driven by HAS-BLED score alone. In truly high-risk bleeders (HAS-BLED \u22653), LAAC remains a reasonable option, but offers no clear event-rate advantage over well-managed OAC.\n\nWhy the other options are incorrect: Option D claims LAAC superiority in HAS-BLED \u22653; the OPTION data show no significant difference between arms, contradicting this claim. Option C incorrectly reverses the finding and suggests OAC is clearly superior; the trial shows equivalence, not OAC superiority. Option B also claims LAAC superiority based on stroke reduction, which contradicts the OPTION trial results showing no significant difference between the two strategies.", "source_article": "Percutaneous left atrial appendage closure following catheter ablation therapy of atrial fibrillation: outcomes stratified by bleeding risk \u2013 a sub-analysis of the OPTION study", "source_journal": "Europace", "source_url": "https://doi.org/10.1093/europace/euag093"}, {"correct": "B", "rationale": "The correct answer emphasizes that while CASTLE-AF demonstrated improved survival and fewer HF hospitalizations with ablation in HF with reduced ejection fraction, careful patient selection and periprocedural optimization are essential, particularly in frail patients or those with device implants. The review 'Who Benefits Most? Patient Selection for Atrial Fibrillation Catheter Ablation in Heart Failure' (AER, https://doi.org/10.15420/aer.2025.83) synthesizes evidence including CASTLE-AF and emphasizes that procedural risks are influenced by patient frailty and device presence (left ventricular assist devices, cardiac resynchronization therapy devices), necessitating careful selection and optimization. This patient has multiple risk factors\u2014advanced frailty (Fried 4/5), recent CRT-D implantation, and multiple comorbidities\u2014that require individualized assessment before deciding on ablation candidacy. The article supports ablation in HF with reduced ejection fraction but stresses that it is not a one-size-fits-all approach; frail patients with advanced devices need careful consideration of timing, periprocedural risk, and likelihood of meaningful benefit.\n\nWhy the other options are incorrect: Option D overgeneralizes the CASTLE-AF findings and ignores the crucial nuance that patient selection and risk stratification are essential, particularly in high-risk subgroups like frail patients with device implants. Option C is factually incorrect; CASTLE-AF demonstrated survival benefit in HF with reduced ejection fraction. Option A reverses the evidence; ablation benefit is stronger in HF with reduced ejection fraction (CASTLE-AF) than in HF with preserved ejection fraction (RAFT-AF showed no primary outcome difference).", "source_article": "Who Benefits Most? Patient Selection for Atrial Fibrillation Catheter Ablation in Heart Failure", "source_journal": "AER", "source_url": "https://doi.org/10.15420/aer.2025.83"}, {"correct": "D", "rationale": "The correct answer is to maintain weight-based heparin dosing. The randomized controlled trial 'Individualized Dose\u2013Response Algorithm Versus Weight-Based Heparin Dosing for Intraprocedural Anticoagulation During Atrial Fibrillation Ablation' (HRO2, https://www.sciencedirect.com/science/article/pii/S2666501826002497?dgcid=rss_sd_all) compared individualized dose-response heparin dosing to weight-based heparin dosing and found that an individualized dose-response algorithm did not reduce thrombotic or bleeding complications compared to weight-based dosing. This means both approaches are similarly safe and effective. In the absence of demonstrated superiority, the simpler, more practical weight-based approach is preferable because it requires less additional monitoring or algorithm-guided adjustments during routine AF ablation procedures. Practitioners do not need to adopt more complex individualized dosing protocols unless other data suggest benefit in specific high-risk subgroups. Weight-based dosing remains the standard of care.\n\nWhy the other options are incorrect: Option B claims superiority of individualized dosing, which contradicts the trial's finding of no difference between the two approaches. Option C suggests adopting the more complex algorithm despite lack of demonstrated benefit, which is inefficient and increases procedural complexity without improving outcomes. Option A misinterprets the trial data; the study did not show that either heparin strategy is unsafe\u2014rather, it demonstrated equivalence between the two approaches. Direct oral anticoagulants are not used for intraprocedural anticoagulation during ablation.", "source_article": "Individualized Dose\u2013Response Algorithm Versus Weight-Based Heparin Dosing for Intraprocedural Anticoagulation During Atrial Fibrillation Ablation", "source_journal": "HRO2", "source_url": "https://www.sciencedirect.com/science/article/pii/S2666501826002497?dgcid=rss_sd_all"}];
+  var QUIZ_DATE = "June 05, 2026";
+  var TOTAL = 5;
+  var graded = false;
+  var lastScore = 0;
+
+  function escapeHtml(s){
+    return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  document.getElementById("submitBtn").addEventListener("click", function(){
+    var unanswered = 0;
+    for (var i = 0; i < TOTAL; i++){
+      if (!document.querySelector('input[name="q' + i + '"]:checked')) unanswered++;
+    }
+    if (unanswered > 0 && !graded){
+      document.getElementById("warn").style.display = "block";
+      return;
+    }
+    document.getElementById("warn").style.display = "none";
+    grade();
+  });
+
+  function grade(){
+    var correct = 0;
+    for (var i = 0; i < TOTAL; i++){
+      var chosen = document.querySelector('input[name="q' + i + '"]:checked');
+      var ans = QUIZ[i].correct;
+      var picked = chosen ? chosen.value : null;
+      if (picked === ans) correct++;
+
+      var labels = document.querySelectorAll('#card' + i + ' .option');
+      labels.forEach(function(lab){
+        var val = lab.querySelector("input").value;
+        lab.querySelector("input").disabled = true;
+        if (val === ans) lab.classList.add("correct");
+        else if (chosen && val === picked) lab.classList.add("incorrect");
+      });
+
+      var res = document.getElementById("result" + i);
+      var right = picked === ans;
+      var srcHtml = "";
+      if (QUIZ[i].source_article){
+        var label = (QUIZ[i].source_journal ? QUIZ[i].source_journal + " — " : "") + QUIZ[i].source_article;
+        var url = QUIZ[i].source_url || "#";
+        srcHtml = '<span class="src">Source: <a href="' + url + '" target="_blank" rel="noopener">' +
+                  escapeHtml(label) + '</a></span>';
+      }
+      res.className = "result " + (right ? "right" : "wrong");
+      res.innerHTML = '<span class="verdict">' +
+        (right ? "&#10003; Correct" : "&#10007; Your answer: " + (picked || "—") +
+                 " · Correct answer: " + ans) + '</span>' +
+        escapeHtml(QUIZ[i].rationale) + srcHtml;
+      res.hidden = false;
+    }
+
+    lastScore = correct;
+    graded = true;
+    var pct = Math.round((correct / TOTAL) * 100);
+    document.getElementById("scorePct").textContent = pct + "%";
+    document.getElementById("scoreDetail").textContent = correct + " of " + TOTAL + " correct";
+    document.getElementById("scorebar").style.display = "block";
+    document.getElementById("namebox").style.display = "block";
+    document.getElementById("submitBtn").textContent = "Re-check Answers";
+    document.getElementById("certBtn").style.display = "inline-block";
+    document.getElementById("scorebar").scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  document.getElementById("certBtn").addEventListener("click", function(){
+    if (!graded) return;
+    var name = (document.getElementById("participant").value || "").trim();
+    if (!name){
+      var inp = document.getElementById("participant");
+      inp.style.borderColor = "#ffd27f";
+      inp.focus();
+      alert("Please enter your full name and credentials before downloading the certificate.");
+      return;
+    }
+    var info = generateCertificate({name:name, score:lastScore, total:TOTAL, completedAt:new Date(), weekOf:QUIZ_DATE});
+    if (info){
+      var box = document.getElementById("certinfo");
+      box.style.display = "block";
+      box.textContent = "Certificate ID " + info.certId + "  ·  Verification " + info.verCode;
+    }
+  });
+</script>
+</body>
+</html>
