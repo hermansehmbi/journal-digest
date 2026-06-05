@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+preview_*.html
+podcast.mp3
+podcast_script.txt
+*.mp3
+*_script.txt
+
+# Per-specialty runtime state (regenerated each run / cached by CI).
+articles_cache*.json
+monday_featured*.json
+fulltext_cache*.json
+weekly_summaries*.json
+summaries_cache*.json
+self_assessment_tracker*.xlsx
+moc_tracker*.xlsx
+.env
+
+# Local virtual environment
+.venv/
+venv/
+
+# Google service-account keys — NEVER commit (use the GitHub Secret instead).
+service_account*.json
+*service-account*.json
+gcp-*.json
+credentials.json
+
+# Published podcast episodes ARE tracked so GitHub Pages can serve them.
+!docs/audio/*.mp3
+
+# Intro/outro music MUST be committed so GitHub Actions can mix them in.
+!assets/*.mp3
+
+# macOS
+.DS_Store

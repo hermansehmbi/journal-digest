@@ -1,0 +1,167 @@
+{
+  "name": "Anesthesia",
+  "short_name": "anesthesia",
+  "description": "Ten leading anesthesia journals for a practicing generalist anesthesiologist.",
+  "brand_short": "Anesthesia",
+  "brand_full": "Anesthesia Journal Digest",
+  "email_subject_prefix": "Anesthesia",
+  "mode": "api",
+  "audio_enabled": true,
+  "deepdive_enabled": true,
+  "publish_enabled": true,
+  "initial_lookback_days": 30,
+  "cme_num_questions": "per_article",
+  "relevance_filter_prompt": "",
+  "cme_prompt": "",
+  "article_selector_prompt": "",
+  "podcast_script_prompt": "",
+  "google_sheet_tab_name": "Activity Log",
+  "google_sheet_report_tab": "Summary & Report",
+  "google_sheet_journals_tab": "Anesthesia - Journal Reference",
+  "journals": [
+    {
+      "name": "British Journal of Anaesthesia",
+      "abbreviation": "BJA",
+      "issn": "0007-0912",
+      "rss_url": "https://www.bjanaesthesia.org/rss/current",
+      "rss_url_inpress": "https://www.bjanaesthesia.org/rss/inpress",
+      "website": "https://www.bjanaesthesia.org",
+      "impact_factor": 9.2,
+      "publisher": "elsevier",
+      "filter_required": false,
+      "podcast": {
+        "name": "BJA Podcast",
+        "rss_url": "https://feed.podbean.com/bjajournal/feed.xml",
+        "website": "https://podcasts.apple.com/podcast/id649829936"
+      }
+    },
+    {
+      "name": "Anesthesiology",
+      "abbreviation": "Anesthesiology",
+      "issn": "0003-3022",
+      "rss_url": "https://pubs.asahq.org/anesthesiology/pages/rss",
+      "website": "https://pubs.asahq.org/anesthesiology",
+      "impact_factor": 9.1,
+      "publisher": "lww",
+      "filter_required": false,
+      "podcast": {
+        "name": "Anesthesiology Journal Podcast",
+        "rss_url": "https://anesthesiology.libsyn.com/rss",
+        "website": "https://anesthesiology.libsyn.com/"
+      }
+    },
+    {
+      "name": "Anaesthesia",
+      "abbreviation": "Anaesthesia",
+      "issn": "0003-2409",
+      "rss_url": "https://associationofanaesthetists-publications.onlinelibrary.wiley.com/feed/13652044/most-recent",
+      "website": "https://associationofanaesthetists-publications.onlinelibrary.wiley.com/journal/13652044",
+      "impact_factor": 6.9,
+      "publisher": "wiley",
+      "filter_required": false,
+      "podcast": {
+        "name": "Anaesthesia Journal Podcast",
+        "rss_url": "https://feed.podbean.com/anaepodcasts/feed.xml",
+        "website": "https://anaepodcasts.podbean.com/"
+      }
+    },
+    {
+      "name": "European Journal of Anaesthesiology",
+      "abbreviation": "EJA",
+      "issn": "0265-0215",
+      "rss_url": "https://journals.lww.com/ejanaesthesiology/_layouts/15/OAKS.Journals/feed.aspx?FeedType=MostRecentIssue",
+      "website": "https://journals.lww.com/ejanaesthesiology",
+      "impact_factor": 6.8,
+      "publisher": "lww",
+      "filter_required": false,
+      "podcast": {
+        "name": "EJA Author Audio Q&A",
+        "rss_url": null,
+        "website": "https://journals.lww.com/ejanaesthesiology"
+      }
+    },
+    {
+      "name": "Journal of Clinical Anesthesia",
+      "abbreviation": "JCA",
+      "issn": "0952-8180",
+      "rss_url": "https://www.sciencedirect.com/journal/journal-of-clinical-anesthesia/rss",
+      "website": "https://www.sciencedirect.com/journal/journal-of-clinical-anesthesia",
+      "impact_factor": 5.1,
+      "publisher": "elsevier",
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Anaesthesia Critical Care & Pain Medicine",
+      "abbreviation": "ACCPM",
+      "issn": "2352-5568",
+      "rss_url": "https://www.sciencedirect.com/journal/anaesthesia-critical-care-and-pain-medicine/rss",
+      "website": "https://www.sciencedirect.com/journal/anaesthesia-critical-care-and-pain-medicine",
+      "impact_factor": 4.7,
+      "publisher": "elsevier",
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Anesthesia & Analgesia",
+      "abbreviation": "A&A",
+      "issn": "0003-2999",
+      "rss_url": "https://journals.lww.com/anesthesia-analgesia/_layouts/15/OAKS.Journals/feed.aspx?FeedType=MostRecentIssue",
+      "website": "https://journals.lww.com/anesthesia-analgesia",
+      "impact_factor": 3.8,
+      "publisher": "lww",
+      "filter_required": false,
+      "podcast": {
+        "name": "OpenAnesthesia Podcast",
+        "rss_url": "https://openanesthesia.libsyn.com/rss",
+        "website": "https://www.openanesthesia.org/"
+      }
+    },
+    {
+      "name": "Regional Anesthesia & Pain Medicine",
+      "abbreviation": "RAPM",
+      "issn": "1098-7339",
+      "rss_url": "https://rapm.bmj.com/rss/current.xml",
+      "website": "https://rapm.bmj.com",
+      "impact_factor": 3.5,
+      "publisher": "bmj",
+      "filter_required": false,
+      "podcast": {
+        "name": "RAPM Focus",
+        "rss_url": "https://feed.podbean.com/rapmfocusbmj/feed.xml",
+        "website": "https://rapmfocusbmj.podbean.com/"
+      }
+    },
+    {
+      "name": "Canadian Journal of Anesthesia",
+      "abbreviation": "CJA",
+      "issn": "0832-610X",
+      "rss_url": "https://link.springer.com/journal/12630.rss",
+      "website": "https://link.springer.com/journal/12630",
+      "impact_factor": 3.3,
+      "publisher": "springer",
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "International Journal of Obstetric Anesthesia",
+      "abbreviation": "IJOA",
+      "issn": "0959-289X",
+      "rss_url": "https://www.sciencedirect.com/journal/international-journal-of-obstetric-anesthesia/rss",
+      "website": "https://www.sciencedirect.com/journal/international-journal-of-obstetric-anesthesia",
+      "impact_factor": 2.3,
+      "publisher": "elsevier",
+      "filter_required": false,
+      "podcast": null
+    }
+  ],
+  "bonus_podcasts": [
+    {
+      "name": "ASA Central Line",
+      "rss_url": "https://feed.podbean.com/asahq/feed.xml",
+      "website": "https://www.asahq.org/podcasts/central-line",
+      "description": "ASA's monthly podcast covering anesthesiology issues"
+    }
+  ],
+  "podcast_rotation": []
+}

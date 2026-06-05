@@ -1,0 +1,197 @@
+{
+  "name": "Electrophysiology",
+  "short_name": "ep",
+  "description": "Interventional cardiac electrophysiology — catheter ablation, cardiac implantable devices, conduction system pacing, and mapping.",
+  "brand_short": "EP",
+  "brand_full": "EP Journal Digest",
+  "email_subject_prefix": "EP",
+  "mode": "api",
+  "audio_enabled": false,
+  "deepdive_enabled": false,
+  "publish_enabled": false,
+  "initial_lookback_days": 30,
+  "cme_num_questions": 5,
+  "relevance_filter_prompt": "You are an interventional cardiac electrophysiology relevance filter.\nGiven an article title and abstract from a general cardiology journal,\nclassify it as RELEVANT or NOT_RELEVANT to a practicing interventional electrophysiologist.\n\nRELEVANT if the article covers ANY of:\n- Catheter ablation (RF, cryoablation, PFA/pulsed field ablation)\n- AF management with ablation focus (rhythm control trials, ablation vs drugs)\n- Left atrial appendage closure/occlusion (Watchman, Amulet, LAAO)\n- VT/VF ablation, substrate mapping, epicardial ablation\n- Cardiac implantable devices (pacemakers, ICDs, S-ICD, CRT, leadless pacing)\n- Lead management and extraction\n- Conduction system pacing (His bundle, left bundle branch area pacing)\n- Intracardiac electrogram interpretation\n- 3D electroanatomical mapping systems (CARTO, EnSite)\n- SVT/WPW/accessory pathway ablation\n- EP-relevant imaging (pre-ablation CT, cardiac MRI for scar, ICE guidance)\n- Anticoagulation specifically in periprocedural ablation context\n- Sudden cardiac death risk stratification with device implications\n- Channelopathies with device/ablation management implications\n- Complications of EP procedures (tamponade, esophageal injury, vascular)\n- Remote monitoring of cardiac devices\n- Wearable/digital arrhythmia detection with clinical decision implications\n\nNOT_RELEVANT if:\n- Coronary artery disease / PCI / stenting without arrhythmia component\n- Heart failure management without device/CRT focus\n- Valvular disease without arrhythmia context\n- Pure epidemiology of AF without intervention discussion\n- Basic science electrophysiology without clinical translation\n- Hypertension, lipids, metabolic syndrome without EP link\n- Structural interventions (TAVR, MitraClip) without arrhythmia context\n- Pure pharmacology (new drugs) without ablation/device comparison\n- Cardiac surgery without arrhythmia/device component\n- Pediatric cardiology without EP focus\n\nRespond with ONLY: RELEVANT or NOT_RELEVANT",
+  "cme_prompt": "You are a CME question generator for interventional cardiac electrophysiology.\nGiven the set of journal articles below, generate EXACTLY {num_questions} high-quality\nfellowship-level self-assessment questions. These support self-directed study (the kind a\nphysician may self-report under RCPSC Section 2 Self-Learning); do not state or imply that\ncompleting them awards any formal credit.\n\nARTICLES FOR THIS WEEK (each has source text — full text if open access, otherwise abstract):\n{articles_text}\n\nUse a MIX of these formats across the {num_questions} questions (let the mix reflect whatever\narticles are available this week):\n\nFORMAT A - Case-based ablation/device decision (at least 2 of these):\n  Present a clinical scenario with patient demographics, history, prior interventions, and\n  relevant imaging/testing. Ask what the best interventional approach would be.\n\nFORMAT B - Intraprocedural decision:\n  Present a scenario during an EP procedure where an unexpected finding or complication occurs.\n  Ask the best next step.\n\nFORMAT C - Trial/evidence knowledge:\n  Reference a specific finding from one of this week's articles. Ask about the key result, its\n  clinical implication, or how it changes practice.\n\nFORMAT D - Device programming/management:\n  Present a device interrogation scenario (inappropriate shocks, loss of capture, lead issue).\n  Ask the correct programming change or management step.\n\nRULES:\n- Every question MUST reference a specific article from the provided list (use its exact title,\n  journal abbreviation, and URL).\n- Provide exactly 4 options (A-D): ONE clearly correct answer and three plausible distractors.\n  Avoid \"all/none of the above\".\n- Difficulty: fellowship-level (aim for a practicing interventional EP, not a general\n  cardiologist). Avoid questions answerable from general cardiology knowledge alone.\n- Write a detailed explanation for the correct answer AND a brief note on why each main wrong\n  answer is wrong. Include the source article title and DOI in the explanation. Refer to choices\n  BY THEIR CONTENT/WORDING, never by letter (option order is randomized afterwards).\n- Use ONLY numbers that actually appear in the Source text; if abstract-only or a number isn't\n  present, stay qualitative. NEVER fabricate statistics, CIs, or p-values.\n- VARY which option is correct across the set.\n\nRESPOND IN THIS EXACT JSON FORMAT (no markdown, no backticks, just raw JSON):\n[\n  {{\n    \"question\": \"A 64-year-old ... <clinical scenario> ... What is the best ... ?\",\n    \"options\": {{\n      \"A\": \"<distinct option text>\",\n      \"B\": \"<distinct option text>\",\n      \"C\": \"<distinct option text>\",\n      \"D\": \"<distinct option text>\"\n    }},\n    \"correct\": \"<the letter of the correct option>\",\n    \"rationale\": \"<Detailed explanation for the correct choice with EP reasoning, brief note on why the main distractors are wrong, and the source article title + DOI. Name choices by wording, not letter.>\",\n    \"source_article\": \"Exact title of the source article\",\n    \"source_journal\": \"<journal abbreviation>\",\n    \"source_url\": \"https://...\"\n  }}\n]\n\nGenerate exactly {num_questions} fellowship-level EP questions using the formats above.",
+  "article_selector_prompt": "You are the editor of a digest for a practicing interventional cardiac electrophysiologist (catheter ablation, device implantation/management, conduction system pacing, LAAO). For EACH journal below, pick the ONE single most clinically relevant article for that reader by its number.\n\nPRIORITIZE: randomized controlled trials; systematic reviews and meta-analyses; clinical practice\nguidelines and consensus/expert-consensus statements; and topics with direct procedural or device\nimpact (catheter ablation including PFA, AF rhythm control, VT/VF ablation and mapping, CIEDs —\npacemakers/ICD/CRT/S-ICD/leadless, conduction system pacing, lead management/extraction, LAAO,\nperiprocedural anticoagulation, EP procedure complications, remote device monitoring).\nDEPRIORITIZE: basic-science/animal or in-vitro studies without clinical translation; bibliometric,\nscientometric, or methodology papers; editorials, commentaries, and letters; and general\ncardiology topics with no arrhythmia/device component (PCI, valves, lipids, HF without CRT).",
+  "podcast_script_prompt": "You are writing the script for a two-host audio podcast for practicing interventional cardiac electrophysiologists, in a natural, conversational, collegial style — two EP physicians discussing the week's most important ablation, device, and mapping literature.",
+  "google_sheet_tab_name": "EP - MOC Log",
+  "google_sheet_report_tab": "EP - Summary & Report",
+  "google_sheet_journals_tab": "EP - Journal Reference",
+  "journals": [
+    {
+      "name": "Circulation: Arrhythmia and Electrophysiology",
+      "abbreviation": "CircEP",
+      "issn": "1941-3149",
+      "rss_url": "https://www.ahajournals.org/action/showFeed?type=etoc&feed=rss&jc=circep",
+      "website": "https://www.ahajournals.org/journal/circep",
+      "impact_factor": 9.8,
+      "publisher": "atypon",
+      "fully_open_access": false,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "EP Europace",
+      "abbreviation": "Europace",
+      "issn": "1099-5129",
+      "rss_url": null,
+      "website": "https://academic.oup.com/europace",
+      "impact_factor": 7.5,
+      "publisher": "oup",
+      "fully_open_access": true,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Heart Rhythm",
+      "abbreviation": "HeartRhythm",
+      "issn": "1547-5271",
+      "rss_url": "https://rss.sciencedirect.com/publication/science/15475271",
+      "website": "https://www.heartrhythmjournal.com",
+      "impact_factor": 5.8,
+      "publisher": "elsevier",
+      "fully_open_access": false,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "JACC: Clinical Electrophysiology",
+      "abbreviation": "JACC-EP",
+      "issn": "2405-5018",
+      "rss_url": "https://rss.sciencedirect.com/publication/science/2405500X",
+      "website": "https://www.jacc.org/journal/clinical-electrophysiology",
+      "impact_factor": 3.8,
+      "publisher": "elsevier",
+      "fully_open_access": false,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Arrhythmia & Electrophysiology Review",
+      "abbreviation": "AER",
+      "issn": "2050-3369",
+      "rss_url": null,
+      "website": "https://www.aerjournal.com",
+      "impact_factor": 3.3,
+      "publisher": "radcliffe",
+      "fully_open_access": true,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Heart Rhythm O2",
+      "abbreviation": "HRO2",
+      "issn": "2666-5018",
+      "rss_url": "https://rss.sciencedirect.com/publication/science/26665018",
+      "website": "https://www.heartrhythmopen.com",
+      "impact_factor": 2.9,
+      "publisher": "elsevier",
+      "fully_open_access": true,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Journal of Cardiovascular Electrophysiology",
+      "abbreviation": "JCE",
+      "issn": "1540-8167",
+      "rss_url": "https://onlinelibrary.wiley.com/feed/15408167/most-recent",
+      "website": "https://onlinelibrary.wiley.com/journal/15408167",
+      "impact_factor": 2.6,
+      "publisher": "wiley",
+      "fully_open_access": false,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "Journal of Interventional Cardiac Electrophysiology",
+      "abbreviation": "JICE",
+      "issn": "1383-875X",
+      "rss_url": "https://link.springer.com/search.rss?facet-journal-id=10840",
+      "website": "https://link.springer.com/journal/10840",
+      "impact_factor": 2.6,
+      "publisher": "springer",
+      "fully_open_access": false,
+      "filter_required": false,
+      "podcast": null
+    },
+    {
+      "name": "European Heart Journal",
+      "abbreviation": "EHJ",
+      "issn": "0195-668X",
+      "rss_url": null,
+      "website": "https://academic.oup.com/eurheartj",
+      "impact_factor": 35.7,
+      "publisher": "oup",
+      "fully_open_access": false,
+      "filter_required": true,
+      "podcast": null
+    },
+    {
+      "name": "Journal of the American College of Cardiology",
+      "abbreviation": "JACC",
+      "issn": "0735-1097",
+      "rss_url": "https://rss.sciencedirect.com/publication/science/07351097",
+      "website": "https://www.jacc.org/journal/jacc",
+      "impact_factor": 21.7,
+      "publisher": "elsevier",
+      "fully_open_access": false,
+      "filter_required": true,
+      "podcast": null
+    }
+  ],
+  "bonus_podcasts": [
+    {
+      "name": "The European Heart Journal Podcast",
+      "rss_url": "https://feeds.blubrry.com/feeds/eurheartj.xml",
+      "website": "https://academic.oup.com/eurheartj",
+      "description": "Oxford/ESC author interviews on major cardiology and EP trials"
+    }
+  ],
+  "podcast_rotation": [
+    {
+      "week_mod": [
+        0,
+        2
+      ],
+      "podcasts": [
+        {
+          "name": "The Lead (HRS)",
+          "description": "Weekly journal review from the Heart Rhythm Society",
+          "url": "https://www.hrsonline.org/publications-resources/podcasts/",
+          "rss_url": "https://rss.libsyn.com/shows/479448/destinations/4075953.xml",
+          "frequency": "Weekly"
+        },
+        {
+          "name": "EHRA Cardio Talk (EHRA / ESC)",
+          "description": "EP and cardiac pacing from the European Heart Rhythm Association",
+          "url": "https://www.escardio.org/Education/E-Learning/Podcasts",
+          "rss_url": "https://rss.libsyn.com/shows/370847/destinations/3046280.xml",
+          "frequency": "Regular"
+        }
+      ]
+    },
+    {
+      "week_mod": [
+        1,
+        3
+      ],
+      "podcasts": [
+        {
+          "name": "The EP Edit",
+          "description": "EP Lab Digest's podcast with thought leaders in EP",
+          "url": "https://www.hmpgloballearningnetwork.com/site/eplab/podcasts",
+          "rss_url": "https://anchor.fm/s/971d8174/podcast/rss",
+          "frequency": "Monthly"
+        },
+        {
+          "name": "HRX NeXt (HRS)",
+          "description": "Innovation and the future of heart rhythm care",
+          "url": "https://www.hrsonline.org/publications-resources/podcasts/",
+          "rss_url": "https://rss.libsyn.com/shows/594400/destinations/5166590.xml",
+          "frequency": "Biweekly"
+        }
+      ]
+    }
+  ]
+}

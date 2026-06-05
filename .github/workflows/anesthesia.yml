@@ -1,0 +1,130 @@
+name: Anesthesia Digest
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CRON IS DISABLED until you finish the cutover (see README "Cutover plan").
+# Re-enable by un-commenting the schedule block below.
+# ─────────────────────────────────────────────────────────────────────────────
+on:
+  # schedule:
+  #   # Monday 11:00 UTC (7:00 AM ET summer) — weekly digest
+  #   - cron: '0 11 * * 1'
+  #   # Saturday 12:00 UTC (8:00 AM ET) — weekly CME
+  #   - cron: '0 12 * * 6'
+  #   # 1st of each month 13:00 UTC (9:00 AM ET) — monthly MOC
+  #   - cron: '0 13 1 * *'
+
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Which email to send'
+        required: true
+        default: 'digest'
+        type: choice
+        options: [digest, saturday, monthly, preview, preview-sat, preview-month]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    # Needed so the digest run can commit the published podcast episode +
+    # player page to /docs and push it for GitHub Pages.
+    permissions:
+      contents: write
+
+    env:
+      SPECIALTY: anesthesia
+      GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+      SENDER_EMAIL: ${{ secrets.GMAIL_ADDRESS }}
+      # Live MOC tracking in Google Sheets (optional — falls back to local xlsx).
+      # The key may be named GOOGLE_SHEETS_CREDENTIALS or GOOGLE_SERVICE_ACCOUNT_JSON.
+      GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.GOOGLE_SHEETS_CREDENTIALS }}
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+      GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+      # Pages URL is derived from the repo context — no username hardcoded.
+      GITHUB_PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ffmpeg (required by pydub for the two-host audio mix)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure git for publishing
+        run: |
+          git config user.name "Journal Digest Bot"
+          git config user.email "journal-digest@users.noreply.github.com"
+
+      - name: Restore article cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            articles_cache_anesthesia.json
+            monday_featured_anesthesia.json
+            fulltext_cache_anesthesia.json
+            weekly_summaries_anesthesia.json
+            summaries_cache_anesthesia.json
+          key: cache-anesthesia-${{ github.run_id }}
+          restore-keys: cache-anesthesia-
+
+      - name: Restore MOC tracker
+        uses: actions/cache/restore@v4
+        with:
+          path: self_assessment_tracker_anesthesia.xlsx
+          key: moc-anesthesia-${{ github.run_id }}
+          restore-keys: moc-anesthesia-
+
+      - name: Determine command
+        id: cmd
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "command=${{ github.event.inputs.command }}" >> $GITHUB_OUTPUT
+          else
+            DAY=$(date -u +%u)
+            DOM=$(date -u +%d)
+            HOUR=$(date -u +%H)
+            if [ "$DOM" = "01" ] && [ "$HOUR" -ge 13 ]; then
+              echo "command=monthly" >> $GITHUB_OUTPUT
+            elif [ "$DAY" = "6" ]; then
+              echo "command=saturday" >> $GITHUB_OUTPUT
+            else
+              echo "command=digest" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Run
+        run: python main.py ${{ steps.cmd.outputs.command }} --specialty=anesthesia
+
+      - name: Save article cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            articles_cache_anesthesia.json
+            monday_featured_anesthesia.json
+            fulltext_cache_anesthesia.json
+            weekly_summaries_anesthesia.json
+            summaries_cache_anesthesia.json
+          key: cache-anesthesia-${{ github.run_id }}
+
+      - name: Save MOC tracker
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: self_assessment_tracker_anesthesia.xlsx
+          key: moc-anesthesia-${{ github.run_id }}
