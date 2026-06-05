@@ -26,7 +26,9 @@ service_account*.json
 gcp-*.json
 credentials.json
 
-# Published podcast episodes ARE tracked so GitHub Pages can serve them.
+# Published podcast episodes ARE tracked so GitHub Pages can serve them
+# (any specialty's audio dir, e.g. docs/audio/ or docs/ep/audio/).
+!docs/**/*.mp3
 !docs/audio/*.mp3
 
 # Intro/outro music MUST be committed so GitHub Actions can mix them in.

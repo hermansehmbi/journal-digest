@@ -126,8 +126,9 @@ def _summarize_one(api_key: str, model: str, art: dict, info: dict) -> dict | No
         access = ("NO SOURCE TEXT available — keep every field qualitative and "
                   "general; do not invent specifics.")
 
+    from config import SPECIALTY_NAME as _SP, SPECIALTY_AUDIENCE as _AUD
     prompt = f"""You are writing a thorough, structured "Deep Dive" summary of ONE \
-anesthesiology journal article for practicing anesthesiologists.
+{_SP.lower()} journal article for {_AUD}.
 
 Article title: {art.get('title', '')}
 Journal: {art.get('journal', '')} ({art.get('journal_abbr', '')})
@@ -136,7 +137,7 @@ Access: {access}
 Source text:
 {text[:6000]}
 
-Write for a practicing generalist anesthesiologist, BALANCING the study's actual \
+Write for {_AUD}, BALANCING the study's actual \
 results with their bedside meaning. ALWAYS REPORT THE KEY NUMBERS — the primary \
 outcome figures (event rates, effect size, risk/odds ratio, or absolute/relative \
 change) and the main statistic if reported — and then translate them into plain \

@@ -75,7 +75,9 @@ def _generate_script(articles: list) -> list[tuple[str, str]] | None:
         logger.error("No ANTHROPIC_API_KEY found. Set it as an environment variable.")
         return None
 
-    from config import CLAUDE_MODEL_FAST, PODCAST_WORD_TARGET
+    from config import (CLAUDE_MODEL_FAST, PODCAST_WORD_TARGET,
+                        PODCAST_MINUTES_TARGET, BRAND_SHORT, SPECIALTY_NAME,
+                        SPECIALTY_AUDIENCE)
 
     # Use up to 10 articles — the script must cover ALL of them.
     articles = articles[:10]
@@ -92,8 +94,8 @@ def _generate_script(articles: list) -> list[tuple[str, str]] | None:
     articles_text = "\n\n".join(briefs)
     n = len(articles)
 
-    prompt = f"""You are writing the script for "Anesthesia Digest," a two-host \
-audio podcast for practicing anesthesiologists, in the natural, conversational \
+    prompt = f"""You are writing the script for "{BRAND_SHORT} Digest," a two-host \
+audio podcast for {SPECIALTY_AUDIENCE}, in the natural, conversational \
 style of NotebookLM's Audio Overviews. Today is \
 {datetime.now().strftime('%A, %B %d, %Y')}.
 
@@ -102,8 +104,8 @@ There are TWO hosts:
 - Host B (curious, asks sharp follow-up questions, adds clinical color)
 
 TARGET LENGTH: approximately {PODCAST_WORD_TARGET} words total (this fills about \
-15 minutes of listening). Aim for this length — do not stop far short, and do \
-not significantly exceed it.
+{PODCAST_MINUTES_TARGET} minutes of listening). Aim for this length — do not stop \
+far short, and do not significantly exceed it.
 
 ARTICLES TO COVER (there are {n} — you MUST cover ALL {n}):
 {articles_text}
@@ -118,14 +120,14 @@ HOW TO WRITE IT:
 - Make it a genuine conversation: banter, follow-up questions, reactions
   ("Oh, that's interesting — so does that change what you'd do?"), natural
   transitions between articles ("Speaking of airways, the next one...").
-- Use accessible, collegial language — two anesthesiologists talking shop.
+- Use accessible, collegial language — two {SPECIALTY_NAME.lower()} colleagues talking shop.
 - Close with a brief two-host sign-off.
 
 FORMAT — this is critical. Output ONLY dialogue lines, each on its own line,
 each beginning with exactly "A:" or "B:" and nothing else. No narration, no
 stage directions, no markdown, no section headers, no brackets. Example:
 
-A: Welcome to Anesthesia Digest for today, I'm here with my co-host...
+A: Welcome to {BRAND_SHORT} Digest for today, I'm here with my co-host...
 B: Great to be here. We've got a packed episode...
 
 Write the full script now."""

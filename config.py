@@ -93,14 +93,24 @@ PODCAST_SCRIPT_PROMPT   = _spec("podcast_script_prompt", "") or ""
 # CME question count: an int (e.g. 5) or the string "per_article" (one per article).
 CME_NUM_QUESTIONS = _spec("cme_num_questions", "per_article")
 
+# ── Audience phrasing (podcast script + Deep Dive tone) ──────────────────────
+# Used to address the reader in AI-written prose ("practicing anesthesiologists",
+# "practicing interventional electrophysiologists", …).
+SPECIALTY_AUDIENCE = _spec("audience", f"practicing {SPECIALTY_NAME.lower()} physicians")
+
 # ── Audio Settings (only if MODE = "api" and AUDIO_ENABLED) ──────────────────
 HOST_A_VOICE = "en-US-AndrewMultilingualNeural"  # Host A — male, warm
 HOST_B_VOICE = "en-US-AvaMultilingualNeural"     # Host B — female, bright
 TTS_VOICE = HOST_A_VOICE
 TTS_VOICE_ALT = HOST_B_VOICE
 TTS_RATE = "+10%"
-PODCAST_MINUTES_TARGET = 15
-PODCAST_WORD_TARGET = 2400
+# Per-specialty episode length (anesthesia ~15 min; EP ~10 min).
+PODCAST_MINUTES_TARGET = int(_spec("podcast_minutes_target", 15))
+PODCAST_WORD_TARGET = int(_spec("podcast_word_target", 2400))
+# How the audio reaches the reader:
+#   "pages"  → hosted on GitHub Pages, played inline via a link (anesthesia)
+#   "attach" → the MP3 is attached to the Monday email (EP)
+AUDIO_DELIVERY = _spec("audio_delivery", "pages")
 
 # ── Music / Mixing ───────────────────────────────────────────────────────────
 INTRO_MUSIC = "assets/intro_music.mp3"
@@ -114,10 +124,51 @@ MUSIC_CROSSFADE_MS = 1200
 PODCAST_TARGET_DBFS = -16.0
 PODCAST_PEAK_CEILING_DBFS = -1.0
 
+# ── Brand palette + brandize maps (one template set, per-specialty look) ─────
+# The engine ships ONE set of HTML templates written in the canonical anesthesia
+# colours/brand strings. branding.brandize() rewrites the FINISHED HTML of every
+# email and published page, swapping these canonical values for the active
+# specialty's. For anesthesia the maps are identities, so its output is
+# byte-for-byte unchanged; EP (and future specialties) get a distinct accent.
+_CANON_PALETTE = {
+    "primary":           "#1a5276",  # main navy — headings, buttons, accents
+    "primary_dark":      "#0e2a3b",  # darker navy — gradient starts
+    "primary_mid":       "#2e86c1",  # mid blue — play/listen/CTA buttons
+    "secondary":         "#148f77",  # teal — Saturday header gradient end
+    "on_primary_subtle": "#cfe3f2",  # light text on the dark primary
+    "on_primary_faint":  "#7fa3bd",  # faint text on the dark primary
+    "primary_bg":        "#eef6fb",  # pale tint — "Bottom line" panel
+}
+EMAIL_PALETTE = {**_CANON_PALETTE, **_spec("email_palette", {})}
+# old canonical hex → active specialty hex (used by branding.brandize)
+COLOR_MAP = {_CANON_PALETTE[k]: EMAIL_PALETTE[k] for k in _CANON_PALETTE}
+
+# Canonical anesthesia brand phrase → active specialty phrase (longest first).
+_an = SPECIALTY_NAME.lower()
+BRAND_STRING_MAP = [
+    ("Anesthesia Journal Digest", BRAND_FULL),
+    ("Anesthesia Digest", f"{BRAND_SHORT} Digest"),
+    ("anesthesia literature", f"{_an} literature"),
+    ("anesthesia articles", f"{_an} articles"),
+    ("anesthesia journals", f"{_an} journals"),
+]
+
 # ── GitHub Pages (inline podcast playback) ───────────────────────────────────
 GITHUB_PAGES_URL = os.environ.get("GITHUB_PAGES_URL", "")
 DOCS_DIR = "docs"
 AUDIO_SUBDIR = "audio"
+# Per-specialty audio player page location (so two specialties hosting audio on
+# Pages never overwrite each other's player). Anesthesia keeps the site root
+# (docs/index.html, docs/audio/); EP gets its own (docs/ep/index.html,
+# docs/ep/audio/). Empty string = site root.
+AUDIO_PAGE_SUBDIR = _spec("audio_page_subdir", "" if SPECIALTY_SHORT == "anesthesia"
+                          else SPECIALTY_SHORT)
+# Per-specialty docs subdirectories + audio filename prefix so specialties never
+# collide on GitHub Pages (anesthesia → cme / deep-dive / anesthesia-digest-*.mp3;
+# EP → cme-ep / deep-dive-ep / ep-digest-*.mp3).
+DOCS_CME_SUBDIR = _spec("docs_cme_subdir", "cme")
+DOCS_DEEPDIVE_SUBDIR = _spec("docs_deepdive_subdir", "deep-dive")
+AUDIO_FILE_PREFIX = _spec("audio_file_prefix", f"{SPECIALTY_SHORT}-digest")
 
 # ── Initial Run Settings ─────────────────────────────────────────────────────
 INITIAL_LOOKBACK_DAYS = int(_spec("initial_lookback_days", 30))

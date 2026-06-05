@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
-    # EP does not publish to GitHub Pages, so read-only is enough.
+    # EP publishes its audio player + CME quiz pages to /docs (GitHub Pages).
     permissions:
-      contents: read
+      contents: write
 
     env:
       SPECIALTY: ep
@@ -44,6 +44,8 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
       GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
       GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+      # Pages URL is derived from the repo context — no username hardcoded.
+      GITHUB_PAGES_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
     steps:
       - uses: actions/checkout@v4
@@ -52,8 +54,19 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install ffmpeg (required by pydub for the two-host audio mix)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Configure git for publishing
+        run: |
+          git config user.name "Journal Digest Bot"
+          git config user.email "journal-digest@users.noreply.github.com"
 
       - name: Restore article cache
         uses: actions/cache/restore@v4

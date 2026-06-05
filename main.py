@@ -53,7 +53,7 @@ from pathlib import Path
 from config import (
     JOURNALS, BONUS_PODCASTS, RECIPIENT_EMAIL, SENDER_EMAIL,
     MODE, INITIAL_LOOKBACK_DAYS, SPECIALTY, SPECIALTY_NAME,
-    AUDIO_ENABLED, DEEPDIVE_ENABLED, PUBLISH_ENABLED,
+    AUDIO_ENABLED, DEEPDIVE_ENABLED, PUBLISH_ENABLED, AUDIO_DELIVERY,
 )
 from fetcher import fetch_articles, fetch_podcast_episodes, fetch_bonus_podcasts
 from article_selector import select_digest_articles
@@ -135,17 +135,25 @@ def run_digest(preview=False):
     # audio (e.g. EP launches without TTS — the email works with links alone).
     has_audio = False
     podcast_url = None
+    audio_attached = False
+    audio_path = None
     if MODE == "api" and AUDIO_ENABLED and selected:
         try:
             from podcast_generator import generate_podcast
             audio_name = (f"{SPECIALTY_NAME.replace(' ', '_')}_Digest_"
                           f"{datetime.now().strftime('%Y_%m_%d')}.mp3")
             audio_file = generate_podcast(selected, output_path=audio_name)
-            if audio_file and PUBLISH_ENABLED:
-                from publisher import publish_episode
-                podcast_url = publish_episode(audio_file, datetime.now(),
-                                              push=not preview)
-                has_audio = podcast_url is not None
+            if audio_file:
+                audio_path = audio_file
+                if AUDIO_DELIVERY == "attach":
+                    # Deliver the MP3 as an email attachment (no hosted player).
+                    has_audio = True
+                    audio_attached = True
+                elif PUBLISH_ENABLED:
+                    from publisher import publish_episode
+                    podcast_url = publish_episode(audio_file, datetime.now(),
+                                                  push=not preview)
+                    has_audio = podcast_url is not None
         except Exception as e:
             logger.error(f"Podcast generation/publishing failed: {e}")
 
@@ -176,12 +184,16 @@ def run_digest(preview=False):
                                        has_audio=has_audio,
                                        podcast_url=podcast_url,
                                        deepdive_url=deepdive_url,
-                                       summaries=summaries)
+                                       summaries=summaries,
+                                       audio_attached=audio_attached)
 
     if preview:
         _save(subject, html, "digest")
     else:
-        send_email(RECIPIENT_EMAIL, subject, html, SENDER_EMAIL)
+        # In "attach" mode the MP3 rides along as an email attachment.
+        attachments = [audio_path] if (audio_attached and audio_path) else []
+        send_email(RECIPIENT_EMAIL, subject, html, SENDER_EMAIL,
+                   attachments=attachments)
 
 
 def run_saturday(preview=False):
@@ -283,6 +295,46 @@ def run_monthly(preview=False):
     else:
         send_email(RECIPIENT_EMAIL, subject, html, SENDER_EMAIL,
                    attachments=attachments)
+
+
+def run_sample_quiz():
+    """Write a standalone sample interactive quiz page to docs/<cme-subdir>/
+    sample.html for local design preview (no API, no email). Uses the active
+    specialty's accent + branding via the shared brandize pass."""
+    from pathlib import Path as _P
+    from config import DOCS_DIR, DOCS_CME_SUBDIR
+    from cme_quiz import build_quiz_page
+    from branding import brandize
+    sample = [
+        {"question": "A 58-year-old with drug-refractory paroxysmal AF is scheduled "
+         "for a first ablation. Which energy modality has level-1 evidence for "
+         "comparable efficacy with a favourable safety profile for pulmonary vein "
+         "isolation?", "options": {"A": "Pulsed field ablation (PFA)",
+         "B": "Surgical maze only", "C": "Empirical amiodarone", "D": "AV node ablation"},
+         "correct": "A", "rationale": "Sample item for design preview only.",
+         "source_article": "Sample article — PVI energy sources",
+         "source_journal": "Sample", "source_url": "https://example.org"},
+        {"question": "During a VT ablation the patient develops sudden hypotension "
+         "and a pericardial effusion on ICE. What is the best immediate next step?",
+         "options": {"A": "Continue mapping", "B": "Pericardiocentesis and reverse "
+         "anticoagulation", "C": "Increase sedation", "D": "Rapid atrial pacing"},
+         "correct": "B", "rationale": "Sample item for design preview only.",
+         "source_article": "Sample article — EP complications",
+         "source_journal": "Sample", "source_url": "https://example.org"},
+        {"question": "A CRT-D patient presents with recurrent inappropriate shocks "
+         "from T-wave oversensing. Which programming change is most appropriate?",
+         "options": {"A": "Disable all therapy", "B": "Lower the sensitivity / adjust "
+         "decay delay", "C": "Increase shock energy", "D": "Shorten the VT detection "
+         "interval"}, "correct": "B", "rationale": "Sample item for design preview only.",
+         "source_article": "Sample article — device programming",
+         "source_journal": "Sample", "source_url": "https://example.org"},
+    ]
+    docs = _P(DOCS_DIR) / DOCS_CME_SUBDIR
+    docs.mkdir(parents=True, exist_ok=True)
+    out = docs / "sample.html"
+    out.write_text(brandize(build_quiz_page(sample, datetime.now())), encoding="utf-8")
+    logger.info(f"Wrote sample quiz page → {out}")
+    print(str(out))
 
 
 # ── Specialty helpers ────────────────────────────────────────────────────────
@@ -486,6 +538,7 @@ if __name__ == "__main__":
         "preview": lambda: run_digest(preview=True),
         "preview-sat": lambda: run_saturday(preview=True),
         "preview-month": lambda: run_monthly(preview=True),
+        "sample-quiz": run_sample_quiz,
     }
 
     if cmd in cmds:

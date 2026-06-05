@@ -30,7 +30,9 @@ def publish_episode(audio_file: str, date_obj: datetime | None = None,
     Returns the public GitHub Pages URL of the player page (the listener lands
     on the page and the latest episode auto-loads), or None on failure.
     """
-    from config import GITHUB_PAGES_URL, DOCS_DIR, AUDIO_SUBDIR
+    from config import (GITHUB_PAGES_URL, DOCS_DIR, AUDIO_SUBDIR,
+                        AUDIO_FILE_PREFIX, AUDIO_PAGE_SUBDIR)
+    from branding import brandize
 
     src = Path(audio_file)
     if not src.exists():
@@ -41,10 +43,14 @@ def publish_episode(audio_file: str, date_obj: datetime | None = None,
     date_str = date_obj.strftime("%Y-%m-%d")
 
     docs = Path(DOCS_DIR)
-    audio_dir = docs / AUDIO_SUBDIR
+    # Per-specialty player page directory (root for anesthesia, docs/<short> for
+    # others) so hosted players never collide. Audio lives under that dir so the
+    # player's relative "audio/<file>" src works in either location.
+    page_dir = docs / AUDIO_PAGE_SUBDIR if AUDIO_PAGE_SUBDIR else docs
+    audio_dir = page_dir / AUDIO_SUBDIR
     audio_dir.mkdir(parents=True, exist_ok=True)
 
-    dated_name = f"anesthesia-digest-{date_str}.mp3"
+    dated_name = f"{AUDIO_FILE_PREFIX}-{date_str}.mp3"
     dest = audio_dir / dated_name
     shutil.copyfile(src, dest)
     logger.info(f"Episode copied to {dest}")
@@ -54,13 +60,14 @@ def publish_episode(audio_file: str, date_obj: datetime | None = None,
 
     pretty_date = date_obj.strftime("%B %d, %Y")
     episodes = _list_episodes(audio_dir)
-    html = _player_html(f"{AUDIO_SUBDIR}/{dated_name}", pretty_date, episodes)
-    (docs / "index.html").write_text(html, encoding="utf-8")
-    logger.info("Rebuilt docs/index.html player page")
+    html = brandize(_player_html(f"{AUDIO_SUBDIR}/{dated_name}", pretty_date, episodes))
+    (page_dir / "index.html").write_text(html, encoding="utf-8")
+    page_rel = f"{AUDIO_PAGE_SUBDIR}/" if AUDIO_PAGE_SUBDIR else ""
+    logger.info(f"Rebuilt docs/{page_rel}index.html player page")
 
     base = GITHUB_PAGES_URL.rstrip("/")
-    player_url = f"{base}/"
-    episode_url = f"{base}/{AUDIO_SUBDIR}/{dated_name}"
+    player_url = f"{base}/{page_rel}"
+    episode_url = f"{base}/{page_rel}{AUDIO_SUBDIR}/{dated_name}"
 
     if push:
         _git_publish(f"Publish podcast episode {date_str}")
@@ -76,8 +83,9 @@ def publish_cme_quiz(questions: list[dict], date_obj: datetime | None = None,
     docs/cme/index.html listing, commit + push, and return the quiz's public
     GitHub Pages URL.
     """
-    from config import GITHUB_PAGES_URL, DOCS_DIR
+    from config import GITHUB_PAGES_URL, DOCS_DIR, DOCS_CME_SUBDIR
     from cme_quiz import build_quiz_page, build_quiz_index, build_cert_preview
+    from branding import brandize
 
     if not questions:
         logger.warning("No CME questions — skipping quiz publishing")
@@ -87,27 +95,27 @@ def publish_cme_quiz(questions: list[dict], date_obj: datetime | None = None,
     date_str = date_obj.strftime("%Y-%m-%d")
 
     docs = Path(DOCS_DIR)
-    cme_dir = docs / "cme"
+    cme_dir = docs / DOCS_CME_SUBDIR
     cme_dir.mkdir(parents=True, exist_ok=True)
     (docs / ".nojekyll").write_text("", encoding="utf-8")
 
     page_name = f"{date_str}.html"
     (cme_dir / page_name).write_text(
-        build_quiz_page(questions, date_obj), encoding="utf-8")
-    logger.info(f"Wrote quiz page docs/cme/{page_name}")
+        brandize(build_quiz_page(questions, date_obj)), encoding="utf-8")
+    logger.info(f"Wrote quiz page docs/{DOCS_CME_SUBDIR}/{page_name}")
 
     # Refresh the index from whatever dated quizzes exist.
     quizzes = _list_quizzes(cme_dir)
     (cme_dir / "index.html").write_text(
-        build_quiz_index(quizzes), encoding="utf-8")
-    logger.info("Rebuilt docs/cme/index.html")
+        brandize(build_quiz_index(quizzes)), encoding="utf-8")
+    logger.info(f"Rebuilt docs/{DOCS_CME_SUBDIR}/index.html")
 
     # Keep the certificate-design preview in sync with the current design.
     (cme_dir / "cert-preview.html").write_text(
-        build_cert_preview(), encoding="utf-8")
+        brandize(build_cert_preview()), encoding="utf-8")
 
     base = GITHUB_PAGES_URL.rstrip("/")
-    quiz_url = f"{base}/cme/{page_name}"
+    quiz_url = f"{base}/{DOCS_CME_SUBDIR}/{page_name}"
 
     if push:
         _git_publish(f"Publish CME quiz {date_str}")
@@ -122,8 +130,9 @@ def publish_deepdive(summaries: list, date_obj: datetime | None = None,
     the docs/deep-dive/index.html listing, commit + push, and return the page's
     public GitHub Pages URL.
     """
-    from config import GITHUB_PAGES_URL, DOCS_DIR
+    from config import GITHUB_PAGES_URL, DOCS_DIR, DOCS_DEEPDIVE_SUBDIR
     from deepdive_builder import build_deepdive_page, build_deepdive_index
+    from branding import brandize
 
     if not summaries:
         logger.warning("No Deep Dive summaries — skipping page publishing")
@@ -133,22 +142,22 @@ def publish_deepdive(summaries: list, date_obj: datetime | None = None,
     date_str = date_obj.strftime("%Y-%m-%d")
 
     docs = Path(DOCS_DIR)
-    dd_dir = docs / "deep-dive"
+    dd_dir = docs / DOCS_DEEPDIVE_SUBDIR
     dd_dir.mkdir(parents=True, exist_ok=True)
     (docs / ".nojekyll").write_text("", encoding="utf-8")
 
     page_name = f"{date_str}.html"
     (dd_dir / page_name).write_text(
-        build_deepdive_page(summaries, date_obj), encoding="utf-8")
-    logger.info(f"Wrote Deep Dive page docs/deep-dive/{page_name}")
+        brandize(build_deepdive_page(summaries, date_obj)), encoding="utf-8")
+    logger.info(f"Wrote Deep Dive page docs/{DOCS_DEEPDIVE_SUBDIR}/{page_name}")
 
     pages = _list_deepdive(dd_dir)
     (dd_dir / "index.html").write_text(
-        build_deepdive_index(pages), encoding="utf-8")
-    logger.info("Rebuilt docs/deep-dive/index.html")
+        brandize(build_deepdive_index(pages)), encoding="utf-8")
+    logger.info(f"Rebuilt docs/{DOCS_DEEPDIVE_SUBDIR}/index.html")
 
     base = GITHUB_PAGES_URL.rstrip("/")
-    page_url = f"{base}/deep-dive/{page_name}"
+    page_url = f"{base}/{DOCS_DEEPDIVE_SUBDIR}/{page_name}"
 
     if push:
         _git_publish(f"Publish Deep Dive summaries {date_str}")
@@ -186,9 +195,10 @@ def _list_quizzes(cme_dir: Path) -> list[tuple[str, str]]:
 
 def _list_episodes(audio_dir: Path) -> list[tuple[str, str]]:
     """Return [(YYYY-MM-DD, relative_path)] newest first for the archive list."""
+    from config import AUDIO_FILE_PREFIX
     eps = []
-    for mp3 in audio_dir.glob("anesthesia-digest-*.mp3"):
-        date_part = mp3.stem.replace("anesthesia-digest-", "")
+    for mp3 in audio_dir.glob(f"{AUDIO_FILE_PREFIX}-*.mp3"):
+        date_part = mp3.stem.replace(f"{AUDIO_FILE_PREFIX}-", "")
         eps.append((date_part, f"audio/{mp3.name}"))
     eps.sort(reverse=True)
     return eps
@@ -203,9 +213,9 @@ def _git_publish(message: str):
                 or not subprocess.run(["git", "config", "user.email"],
                                       capture_output=True, text=True).stdout.strip():
             subprocess.run(["git", "config", "user.email",
-                            "anesthesia-digest@users.noreply.github.com"], check=False)
+                            "journal-digest@users.noreply.github.com"], check=False)
             subprocess.run(["git", "config", "user.name",
-                            "Anesthesia Digest Bot"], check=False)
+                            "Journal Digest Bot"], check=False)
 
         subprocess.run(["git", "add", "docs"], check=True)
         status = subprocess.run(["git", "status", "--porcelain", "docs"],
