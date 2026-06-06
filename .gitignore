@@ -7,10 +7,11 @@ podcast_script.txt
 *_script.txt
 
 # Per-specialty runtime state (regenerated each run / cached by CI).
+# monday_featured_*.json and weekly_summaries_*.json are intentionally TRACKED
+# (committed by the Monday run) so the Saturday CME hand-off survives a wiped
+# Actions cache. The rest are best-effort optimization caches and stay ignored.
 articles_cache*.json
-monday_featured*.json
 fulltext_cache*.json
-weekly_summaries*.json
 summaries_cache*.json
 self_assessment_tracker*.xlsx
 moc_tracker*.xlsx

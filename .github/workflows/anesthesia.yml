@@ -70,14 +70,16 @@ jobs:
           git config user.name "Journal Digest Bot"
           git config user.email "journal-digest@users.noreply.github.com"
 
+      # monday_featured_*.json / weekly_summaries_*.json are NOT cached — they are
+      # committed to the repo (see "Persist digest state" below) so the Saturday
+      # CME run always finds Monday's article set from a fresh checkout, even if
+      # the best-effort Actions cache is wiped. Only the bulky caches stay here.
       - name: Restore article cache
         uses: actions/cache/restore@v4
         with:
           path: |
             articles_cache_anesthesia.json
-            monday_featured_anesthesia.json
             fulltext_cache_anesthesia.json
-            weekly_summaries_anesthesia.json
             summaries_cache_anesthesia.json
           key: cache-anesthesia-${{ github.run_id }}
           restore-keys: cache-anesthesia-
@@ -110,15 +112,31 @@ jobs:
       - name: Run
         run: python main.py ${{ steps.cmd.outputs.command }} --specialty=anesthesia
 
+      # Commit the Monday -> Saturday hand-off files so they survive a wiped
+      # Actions cache. Best-effort: never fails the run (the email already sent).
+      - name: Persist digest state (Monday -> Saturday handoff)
+        if: success()
+        continue-on-error: true
+        run: |
+          git add -f monday_featured_anesthesia.json weekly_summaries_anesthesia.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No digest-state changes to commit."
+          else
+            git commit -m "Update anesthesia digest state ($(date -u +%F)) [skip ci]"
+            for i in 1 2 3; do
+              git pull --rebase --autostash origin "${GITHUB_REF_NAME:-main}" \
+                && git push origin "HEAD:${GITHUB_REF_NAME:-main}" && break
+              echo "push attempt $i failed; retrying..."; sleep 5
+            done
+          fi
+
       - name: Save article cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: |
             articles_cache_anesthesia.json
-            monday_featured_anesthesia.json
             fulltext_cache_anesthesia.json
-            weekly_summaries_anesthesia.json
             summaries_cache_anesthesia.json
           key: cache-anesthesia-${{ github.run_id }}
 
