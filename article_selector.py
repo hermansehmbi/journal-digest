@@ -197,3 +197,69 @@ def _api_key() -> str:
         except Exception:
             key = ""
     return key
+
+
+# ── Accessibility-aware scoring + top-N selection ────────────────────────────
+# Pick the best N articles OVERALL (not 1-per-journal), preferring those with
+# retrievable full text. See Task 3.
+
+def _tier1_abbrs() -> set:
+    from config import JOURNALS
+    return {j["abbreviation"] for j in JOURNALS if not j.get("filter_required")}
+
+
+def score_article(art: dict, avail: dict, now: datetime, tier1: set) -> dict:
+    """Return {"score": int, "parts": {...}} for one article."""
+    parts = {"base": 1}
+    if avail.get("has_fulltext"):
+        parts["fulltext"] = 3
+    if avail.get("is_oa") or art.get("is_open_access"):
+        parts["open_access"] = 2
+    if art.get("journal_abbr") in tier1:
+        parts["tier1"] = 1
+    d = art.get("date")
+    if isinstance(d, str):
+        try:
+            d = datetime.fromisoformat(d)
+        except ValueError:
+            d = None
+    age = (now - d).days if d else 999
+    if age <= 7:
+        parts["recency"] = 2
+    elif age <= 14:
+        parts["recency"] = 1
+    return {"score": sum(parts.values()), "parts": parts}
+
+
+def select_top_scored(articles: list, avail_map: dict, sent_keys: set,
+                      top_n: int = 5):
+    """Score every (not-already-sent) article and return (top_n, all_ranked).
+
+    Each returned article is annotated with ``_score``, ``_score_parts`` and
+    ``_avail``. Ranking: score, then impact factor, then recency.
+    """
+    import fulltext_resolver as fr
+    now = datetime.now()
+    tier1 = _tier1_abbrs()
+    ranked = []
+    for a in articles:
+        if fr.key(a) in sent_keys:
+            continue
+        av = avail_map.get(fr.key(a), {})
+        sc = score_article(a, av, now, tier1)
+        a["_score"] = sc["score"]
+        a["_score_parts"] = sc["parts"]
+        a["_avail"] = av
+        ranked.append(a)
+
+    def _sort_key(a):
+        d = a.get("date")
+        if isinstance(d, str):
+            try:
+                d = datetime.fromisoformat(d)
+            except ValueError:
+                d = None
+        return (a["_score"], a.get("impact_factor", 0) or 0, d or datetime.min)
+
+    ranked.sort(key=_sort_key, reverse=True)
+    return ranked[:top_n], ranked

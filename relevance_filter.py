@@ -21,12 +21,48 @@ import os
 import re
 import json
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 # Articles classified per API call, and abstract chars sent per article.
 _BATCH_SIZE = 12
 _ABSTRACT_CHARS = 600
+
+
+# ── Verdict cache (so repeat scans/previews don't re-pay) ────────────────────
+
+def _cache_file() -> str:
+    try:
+        import config
+        sp = config.SPECIALTY
+    except Exception:
+        sp = "default"
+    return f"relevance_cache_{sp}.json"
+
+
+def _akey(art: dict) -> str:
+    doi = (art.get("doi") or "").strip().lower()
+    if doi:
+        return "doi:" + re.sub(r"^https?://(dx\.)?doi\.org/", "", doi)
+    return "url:" + (art.get("url") or "")
+
+
+def _load_verdicts() -> dict:
+    p = Path(_cache_file())
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_verdicts(cache: dict):
+    try:
+        Path(_cache_file()).write_text(json.dumps(cache), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def filter_articles(articles: list[dict], specialty_config=None,
@@ -70,24 +106,32 @@ def filter_articles(articles: list[dict], specialty_config=None,
 
     model = _get(cfg, "RELEVANCE_MODEL", "claude-haiku-4-5-20251001")
 
-    kept = []
-    for start in range(0, len(articles), _BATCH_SIZE):
-        batch = articles[start:start + _BATCH_SIZE]
+    # Only classify articles we haven't judged before — cached verdicts are free.
+    cache = _load_verdicts()
+    uncached = [a for a in articles if _akey(a) not in cache]
+    classified = 0
+    for start in range(0, len(uncached), _BATCH_SIZE):
+        batch = uncached[start:start + _BATCH_SIZE]
         try:
             verdicts = _classify_batch(api_key, model, filter_prompt, batch)
         except Exception as e:
+            # Keep this batch (fail-open) but don't cache, so it retries later.
             logger.warning(f"Relevance filter batch error ({e}); keeping "
-                           f"{len(batch)} articles (fail-open)")
-            kept.extend(batch)
+                           f"{len(batch)} (fail-open, uncached)")
             continue
         for i, art in enumerate(batch):
-            # Default to keep (fail-open) unless explicitly NOT_RELEVANT.
-            if verdicts.get(i) != "NOT_RELEVANT":
-                kept.append(art)
+            cache[_akey(art)] = ("NOT_RELEVANT" if verdicts.get(i) == "NOT_RELEVANT"
+                                 else "RELEVANT")
+        classified += len(batch)
+    if classified:
+        _save_verdicts(cache)
 
+    # Keep everything not explicitly NOT_RELEVANT (uncached/error -> kept).
+    kept = [a for a in articles if cache.get(_akey(a)) != "NOT_RELEVANT"]
     journal = articles[0].get("journal_abbr", "") or articles[0].get("journal", "")
     logger.info(f"Relevance filter [{journal}]: kept {len(kept)}/{len(articles)} "
-                f"relevant ({model}, {-(-len(articles)//_BATCH_SIZE)} call(s))")
+                f"relevant ({classified} newly classified, "
+                f"{len(articles) - len(uncached)} from cache; {model})")
     return kept
 
 

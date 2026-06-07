@@ -43,6 +43,8 @@ _CSS = """
   .b-journal{background:var(--ink);color:#fff;}
   .b-if{background:#eef3f8;color:var(--ink);}
   .b-oa{background:#27ae60;color:#fff;}
+  .b-abs{background:var(--warn);color:#fff;}
+  .bl-note{font-style:italic;color:var(--warn);font-size:12px;}
   .title{font-size:18px;font-weight:bold;color:var(--text);margin:2px 0 4px;line-height:1.35;}
   .meta{font-size:12px;color:var(--muted);}
   .bottomline{margin:14px 0 2px;padding:12px 14px;background:#eef6fb;
@@ -65,6 +67,8 @@ _CSS = """
   .sec h3 .ic{width:22px;height:22px;border-radius:6px;background:#eef3f8;
               display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
   .sec p{margin:0;font-size:14px;color:#3a4750;}
+  .sec ul.pts{margin:2px 0 0;padding-left:20px;}
+  .sec ul.pts li{font-size:14px;color:#3a4750;margin:4px 0;line-height:1.5;}
   .sec.caution{background:var(--warnbg);border:1px solid var(--warnline);
                border-radius:10px;padding:14px 16px;margin-top:14px;}
   .sec.caution h3{color:var(--warn);}
@@ -87,6 +91,17 @@ _TOGGLE_JS = """
 """
 
 
+def _render_val(val: str) -> str:
+    """Render a section value: a multi-line (point-wise) value becomes a bulleted
+    list; a single paragraph stays a <p>. Lines like 'Primary outcome: …' read as
+    discrete points for easy follow-up."""
+    e = html.escape
+    lines = [ln.strip() for ln in str(val).splitlines() if ln.strip()]
+    if len(lines) > 1:
+        return '<ul class="pts">' + "".join(f"<li>{e(ln)}</li>" for ln in lines) + "</ul>"
+    return f"<p>{e(val)}</p>"
+
+
 def _card(s: dict, idx: int, is_open: bool) -> str:
     e = html.escape
     anchor = s.get("anchor") or f"a{idx}"
@@ -96,6 +111,8 @@ def _card(s: dict, idx: int, is_open: bool) -> str:
         tags += f'<span class="badge b-if">IF {e(str(s["impact_factor"]))}</span>'
     if s.get("is_open_access"):
         tags += '<span class="badge b-oa">OPEN ACCESS</span>'
+    if s.get("abstract_only"):
+        tags += '<span class="badge b-abs">ABSTRACT ONLY</span>'
 
     meta = " · ".join(b for b in (e(str(s.get("authors", ""))),
                                   e(str(s.get("journal_abbr", ""))),
@@ -106,10 +123,10 @@ def _card(s: dict, idx: int, is_open: bool) -> str:
         val = s.get(key)
         if val:
             secs += (f'<div class="sec"><h3><span class="ic">{icon}</span> {label}</h3>'
-                     f'<p>{e(val)}</p></div>')
+                     f'{_render_val(val)}</div>')
     if s.get("limitations"):
         secs += ('<div class="sec caution"><h3><span class="ic">⚠️</span> Limitations</h3>'
-                 f'<p>{e(s["limitations"])}</p></div>')
+                 f'{_render_val(s["limitations"])}</div>')
 
     links = ""
     if s.get("url"):
@@ -132,7 +149,7 @@ def _card(s: dict, idx: int, is_open: bool) -> str:
       <div class="meta">{meta}</div>
       <div class="bottomline">
         <span class="lab">Bottom line</span>
-        <p>{e(str(s.get("bottom_line", "")))}</p>
+        <p>{e(str(s.get("bottom_line", "")))}{' <span class="bl-note">(Summary based on abstract — read the full paper for complete methodology and results)</span>' if s.get("abstract_only") else ''}</p>
       </div>
       <button class="toggle" onclick="toggleCard('{anchor}')">
         <span class="lab-text">{label_txt}</span> <span class="chev">▾</span>

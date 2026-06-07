@@ -52,7 +52,7 @@ def generate_summaries(articles: list, max_workers: int = 5) -> list[dict] | Non
     from config import CLAUDE_MODEL_FAST
 
     try:
-        from fulltext_fetcher import get_article_text
+        from fulltext_resolver import get_fulltext as get_article_text
     except Exception:
         get_article_text = None
 
@@ -116,8 +116,9 @@ def _summarize_one(api_key: str, model: str, art: dict, info: dict) -> dict | No
     text = (info.get("text") or art.get("abstract", "")).strip()
 
     if source == "fulltext":
-        access = ("OPEN-ACCESS FULL TEXT (Results/Discussion/Conclusions below). "
-                  "You MAY quote real numbers that appear below.")
+        access = ("OPEN-ACCESS FULL TEXT (Methods/Results/Discussion/Conclusions "
+                  "below). Quote the REAL numbers that appear below — sample sizes, "
+                  "the statistical tests used, effect sizes, CIs and p-values.")
     elif text:
         access = ("ABSTRACT ONLY (paywalled). Base the summary ONLY on this abstract; "
                   "keep design and limitations general and DO NOT invent any statistic "
@@ -126,7 +127,11 @@ def _summarize_one(api_key: str, model: str, art: dict, info: dict) -> dict | No
         access = ("NO SOURCE TEXT available — keep every field qualitative and "
                   "general; do not invent specifics.")
 
-    from config import SPECIALTY_NAME as _SP, SPECIALTY_AUDIENCE as _AUD
+    from config import (SPECIALTY_NAME as _SP, SPECIALTY_AUDIENCE as _AUD,
+                        DEEPDIVE_EMPHASIS as _EMPH, DEEPDIVE_WORDS as _WORDS)
+    # Optional specialty emphasis (e.g. EP wants methods + numbers); empty for
+    # anesthesia so its prompt is unchanged.
+    _emphasis_block = f"\n{_EMPH}\n" if _EMPH else ""
     prompt = f"""You are writing a thorough, structured "Deep Dive" summary of ONE \
 {_SP.lower()} journal article for {_AUD}.
 
@@ -135,7 +140,7 @@ Journal: {art.get('journal', '')} ({art.get('journal_abbr', '')})
 Access: {access}
 
 Source text:
-{text[:6000]}
+{text[:16000]}
 
 Write for {_AUD}, BALANCING the study's actual \
 results with their bedside meaning. ALWAYS REPORT THE KEY NUMBERS — the primary \
@@ -148,12 +153,12 @@ that matter, in plain terms, alongside the clinical takeaway.
 Stay GROUNDED ONLY in the source text above. Never fabricate numbers, study \
 designs, or findings; if the source is an abstract only, or a detail is not stated, \
 say so (e.g. "not reported") rather than inventing it.
-
+{_emphasis_block}
 HARD RULE: never write the phrase "community anesthesiologist" (or "community \
 anaesthetist" / "community anesthetist") anywhere in the output — it is internal \
 audience guidance only and must not appear.
 
-LENGTH: aim for roughly 320-420 words total — substantive but practical.
+LENGTH: aim for roughly {_WORDS} words total — substantive but practical.
 
 Respond with RAW JSON only — no markdown, no backticks — with EXACTLY these keys:
 {{
@@ -165,7 +170,7 @@ Respond with RAW JSON only — no markdown, no backticks — with EXACTLY these 
   "why_it_matters": "Why this matters in everyday practice (1-2 sentences).",
   "limitations": "The main caution and who the results may not apply to (1-2 sentences)."
 }}
-Aim for about 320-420 words total. Plain text only in each field (no markdown)."""
+Aim for about {_WORDS} words total. Plain text only in each field (no markdown)."""
 
     try:
         resp = httpx.post(
@@ -177,7 +182,7 @@ Aim for about 320-420 words total. Plain text only in each field (no markdown)."
             },
             json={
                 "model": model,
-                "max_tokens": 1800,
+                "max_tokens": __import__("config").DEEPDIVE_MAX_TOKENS,
                 "messages": [{"role": "user", "content": prompt}],
             },
             timeout=120,
@@ -201,10 +206,18 @@ Aim for about 320-420 words total. Plain text only in each field (no markdown)."
         "impact_factor": art.get("impact_factor"),
         "is_open_access": info.get("is_open_access", bool(art.get("is_open_access"))),
         "source": source,
+        "abstract_only": bool(info.get("abstract_only")) or source != "fulltext",
+        "fulltext_via": info.get("via", ""),
     }
     for k in SECTION_FIELDS:
         v = obj.get(k)
-        out[k] = (v or "").strip() if isinstance(v, str) else ""
+        if isinstance(v, list):
+            # Point-wise field (e.g. EP "what they found") — one point per line.
+            out[k] = "\n".join(str(x).strip() for x in v if str(x).strip())
+        elif isinstance(v, str):
+            out[k] = v.strip()
+        else:
+            out[k] = ""
     # A summary with no bottom line and no findings is useless — reject it.
     if not out["bottom_line"] and not out["what_they_found"]:
         logger.warning(f"Empty summary discarded for {art.get('url')}")

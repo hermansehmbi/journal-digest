@@ -13,6 +13,8 @@ podcast_script.txt
 articles_cache*.json
 fulltext_cache*.json
 summaries_cache*.json
+doi_cache*.json
+relevance_cache*.json
 self_assessment_tracker*.xlsx
 moc_tracker*.xlsx
 .env

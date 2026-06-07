@@ -93,6 +93,22 @@ PODCAST_SCRIPT_PROMPT   = _spec("podcast_script_prompt", "") or ""
 # CME question count: an int (e.g. 5) or the string "per_article" (one per article).
 CME_NUM_QUESTIONS = _spec("cme_num_questions", "per_article")
 
+# Deep Dive tuning (per specialty). DEEPDIVE_EMPHASIS is an extra instruction
+# block injected into the summary prompt — empty for anesthesia (unchanged),
+# numbers/methods-heavy for EP. DEEPDIVE_WORDS sets the length target;
+# DEEPDIVE_MAX_TOKENS bounds the model output (raise it for longer summaries).
+DEEPDIVE_EMPHASIS = _spec("deepdive_emphasis", "") or ""
+DEEPDIVE_WORDS = _spec("deepdive_words", "320-420")
+DEEPDIVE_MAX_TOKENS = int(_spec("deepdive_max_tokens", 1800))
+
+# ── Article selection strategy ───────────────────────────────────────────────
+# "per_journal" → original: best OA article per journal, capped (anesthesia).
+# "scored"      → accessibility-scored top-N over a multi-week window, dedup'd
+#                 against already-sent DOIs, preferring retrievable full text (EP).
+SELECTION_MODE = _spec("selection_mode", "per_journal")
+SELECTION_LOOKBACK_DAYS = int(_spec("selection_lookback_days", 28))
+DIGEST_TOP_N = int(_spec("digest_max_articles", 5))
+
 # ── Audience phrasing (podcast script + Deep Dive tone) ──────────────────────
 # Used to address the reader in AI-written prose ("practicing anesthesiologists",
 # "practicing interventional electrophysiologists", …).

@@ -170,5 +170,11 @@
       "description": "ASA's monthly podcast covering anesthesiology issues"
     }
   ],
-  "podcast_rotation": []
+  "podcast_rotation": [],
+  "deepdive_emphasis": "AUDIENCE: a practicing anesthesiologist who wants methods + numbers, but CONCISE. TARGET 500-600 words total across all fields — do NOT exceed ~600. Use ONLY figures present in the source; write \"not reported\" where a value is absent; never invent or pad with fabricated numbers.\n\nFor ORIGINAL STUDIES / TRIALS:\n- design (~120-150 words, prose): study type (RCT/registry/cohort; randomized/blinded/adjudicated); total N and per-arm N; enrollment period and follow-up; the anesthesia-specific detail (anesthetic technique and agents with doses; airway/ventilation strategy; regional/neuraxial block; monitoring; the perioperative protocol); the comparator; how the primary and key secondary endpoints were defined; and the STATISTICAL METHODS used (tests/models, covariate adjustment, alpha, any power calculation, intention-to-treat vs per-protocol).\n- what_they_found: return this field as a JSON ARRAY of short point strings — ONE element per finding (NOT a paragraph). Each element begins with its label and a colon, in this order, omitting any not reported:\n  \"Primary outcome: <per-arm rate n/N and %, effect estimate (RR/OR/HR/mean difference) with 95% CI and exact p; absolute risk reduction / NNT if derivable>\",\n  \"Secondary outcome 1: <result with numbers>\",\n  \"Secondary outcome 2: <result with numbers>\",  (add 3, 4 … as reported)\n  \"Safety: <key complication / adverse-event rates per arm>\",\n  \"Recovery/process: <e.g. opioid use, PONV, pain scores, time to extubation, length of stay>\"\nKeep each element to one tight line.\n\nFor NARRATIVE REVIEWS / GUIDELINES / CONSENSUS statements (no single dataset): make design give the document's scope and any stated methodology (or note it is a narrative synthesis); make what_they_found a JSON ARRAY of the key recommendations / thresholds / class-and-level-of-evidence (one per element) with any cited numbers.\n\nKeep bottom_line, what_it_means, and why_it_matters concise and big-picture (1-3 sentences each).",
+  "deepdive_words": "500-600",
+  "deepdive_max_tokens": 2200,
+  "selection_mode": "scored",
+  "selection_lookback_days": 28,
+  "digest_max_articles": 5
 }

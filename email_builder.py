@@ -165,11 +165,16 @@ def build_digest_email(articles: list, podcasts: list, bonus_podcasts: list,
                     more = (f' <a href="{deepdive_url}#{anchor}" style="font-family:{FONT};'
                             f'color:#2e86c1;text-decoration:none;font-weight:bold;white-space:nowrap;">'
                             f'Read more &#8594;</a>')
+                abs_note = ""
+                if s.get("abstract_only"):
+                    abs_note = (f'<div style="font-family:{FONT};font-size:{FS_FOOT}px;'
+                                f'color:#b9770e;font-style:italic;margin-top:4px;">'
+                                f'&#9432; Summary based on abstract — full text not openly available</div>')
                 bl_html = (f'<div style="font-family:{FONT};font-size:{FS_BODY}px;color:#33444f;'
                            f'margin-top:8px;line-height:{LH};padding:10px 12px;background:#eef6fb;'
                            f'border-left:3px solid #2e86c1;border-radius:0 6px 6px 0;">'
                            f'<strong style="color:#1a5276;">Bottom line:</strong> '
-                           f'{s["bottom_line"]}{more}</div>')
+                           f'{s["bottom_line"]}{more}{abs_note}</div>')
 
             articles_html += f"""
     <tr><td style="padding:4px 20px 12px 30px;">

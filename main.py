@@ -74,6 +74,8 @@ MONDAY_FEATURED_FILE = f"monday_featured_{SPECIALTY}.json"
 # Monday's Deep Dive summaries + the published page URL. Saturday reuses these to
 # ground the CME questions (Option B) and to link the same page in the CME email.
 WEEKLY_SUMMARIES_FILE = f"weekly_summaries_{SPECIALTY}.json"
+# DOIs/keys of articles already emailed in any prior digest — never repeat one.
+SENT_FILE = f"sent_articles_{SPECIALTY}.json"
 
 
 def _fetch_all_articles(since_days: int) -> list:
@@ -89,19 +91,52 @@ def _fetch_all_articles(since_days: int) -> list:
     return out
 
 
+def _digest_since() -> int:
+    """Look-back window for the digest. Scored mode uses the multi-week window;
+    per-journal mode keeps the original weekly cadence (>=7 days)."""
+    from config import SELECTION_MODE, SELECTION_LOOKBACK_DAYS
+    if SELECTION_MODE == "scored":
+        return SELECTION_LOOKBACK_DAYS
+    return INITIAL_LOOKBACK_DAYS if INITIAL_LOOKBACK_DAYS > 7 else 7
+
+
+def _select_digest(all_articles: list) -> list:
+    """Pick the articles to feature, per the specialty's selection_mode.
+
+    "scored"      → resolve DOIs, check full-text availability, score, exclude
+                    already-sent, take the top-N overall (EP).
+    "per_journal" → original best-OA-per-journal selection (anesthesia).
+    """
+    from config import SELECTION_MODE, DIGEST_TOP_N
+    if SELECTION_MODE != "scored":
+        return select_digest_articles(all_articles, per_journal=1, max_total=10)
+
+    import fulltext_resolver as fr
+    from article_selector import select_top_scored
+    seen, uniq = set(), []
+    for a in all_articles:
+        k = fr.key(a)
+        if k in seen:
+            continue
+        seen.add(k)
+        uniq.append(a)
+    fr.resolve_dois(uniq)                 # fill missing DOIs (Crossref)
+    avail = fr.availability_map(uniq)     # Unpaywall + PMC
+    sent = _load_sent_keys()
+    top, _ = select_top_scored(uniq, avail, sent, top_n=DIGEST_TOP_N)
+    ft = sum(1 for a in top if a.get("_avail", {}).get("has_fulltext"))
+    logger.info(f"Scored selection: {len(top)} articles ({ft} with full text), "
+                f"excluding {sum(1 for a in uniq if fr.key(a) in sent)} already-sent")
+    return top
+
+
 def run_digest(preview=False):
     """Monday (weekly): articles + podcasts + audio (if API mode & enabled)."""
     logger.info("=" * 50)
     logger.info(f"DIGEST [{SPECIALTY}] — fetching articles and podcasts")
     logger.info("=" * 50)
 
-    since = INITIAL_LOOKBACK_DAYS
-    # The digest runs once a week (Monday), so once past the initial backfill
-    # period look back a full week to cover everything since the last digest.
-    if since <= 7:
-        since = 7
-
-    all_articles = _fetch_all_articles(since)
+    all_articles = _fetch_all_articles(_digest_since())
 
     all_pods = []
     for j in JOURNALS:
@@ -116,9 +151,8 @@ def run_digest(preview=False):
     # Cache the full set first so Saturday's weekly review sees everything.
     _cache_articles(all_articles)
 
-    # Digest email shows a tight selection: the single most clinically relevant
-    # article per journal (chosen by Claude), capped at 10 total.
-    selected = select_digest_articles(all_articles, per_journal=1, max_total=10)
+    # Pick the articles to feature (per the specialty's selection_mode).
+    selected = _select_digest(all_articles)
     logger.info(f"Selected {len(selected)} articles for the digest email")
 
     # Save the EXACT final list emailed in this Monday digest (overwrite). The
@@ -194,6 +228,10 @@ def run_digest(preview=False):
         attachments = [audio_path] if (audio_attached and audio_path) else []
         send_email(RECIPIENT_EMAIL, subject, html, SENDER_EMAIL,
                    attachments=attachments)
+        # Record what we sent so scored selection never repeats it.
+        from config import SELECTION_MODE
+        if SELECTION_MODE == "scored":
+            _add_sent_keys(selected)
 
 
 def run_saturday(preview=False):
@@ -297,6 +335,116 @@ def run_monthly(preview=False):
                    attachments=attachments)
 
 
+def _load_sent_keys() -> set:
+    """Keys (doi:… / url:…) of articles emailed in prior digests."""
+    p = Path(SENT_FILE)
+    if not p.exists():
+        return set()
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return set(data if isinstance(data, list) else data.get("keys", []))
+    except Exception:
+        return set()
+
+
+def _add_sent_keys(articles: list):
+    """Record the just-sent articles so future digests never repeat them."""
+    import fulltext_resolver as fr
+    keys = _load_sent_keys()
+    for a in articles:
+        keys.add(fr.key(a))
+    Path(SENT_FILE).write_text(json.dumps(sorted(keys)), encoding="utf-8")
+    logger.info(f"Recorded {len(articles)} sent articles → {SENT_FILE} "
+                f"({len(keys)} total)")
+
+
+def run_scan():
+    """Dry run (Task 6): fetch 4 weeks, check full-text availability (Unpaywall +
+    PMC), relevance-filter Tier 2, score, and print a table. NO Claude summaries
+    (only Haiku for Tier-2 filtering) — cheap, to judge the full-text strategy."""
+    import fulltext_resolver as fr
+    from article_selector import select_top_scored
+    SINCE = 28
+    logger.info("=" * 50)
+    logger.info(f"SCAN [{SPECIALTY}] — {SINCE}-day window, no summaries")
+    logger.info("=" * 50)
+
+    per_journal = {}
+    all_articles = []
+    for j in JOURNALS:
+        arts = fetch_articles(j, since_days=SINCE)
+        if j.get("filter_required") and arts:
+            arts = relevance_filter.filter_articles(arts)
+        per_journal[j["abbreviation"]] = {"total": len(arts), "ft": 0, "abs": 0,
+                                          "nodoi": 0}
+        all_articles.extend(arts)
+
+    # Dedup by key.
+    seen, uniq = set(), []
+    for a in all_articles:
+        k = fr.key(a)
+        if k in seen:
+            continue
+        seen.add(k)
+        uniq.append(a)
+
+    logger.info(f"{len(uniq)} unique articles; resolving missing DOIs (Crossref) …")
+    fr.resolve_dois(uniq)
+    logger.info("Checking full-text availability (Unpaywall + PMC) …")
+    avail = fr.availability_map(uniq)
+    sent = _load_sent_keys()
+    top, ranked = select_top_scored(uniq, avail, sent, top_n=10)
+
+    # Tally per journal.
+    with_doi = ft_total = unpaywall_hits = 0
+    for a in uniq:
+        av = avail.get(fr.key(a), {})
+        pj = per_journal.get(a.get("journal_abbr"))
+        if av.get("has_doi"):
+            with_doi += 1
+        else:
+            if pj:
+                pj["nodoi"] += 1
+        if av.get("has_fulltext"):
+            ft_total += 1
+            if pj:
+                pj["ft"] += 1
+            if str(av.get("via", "")).startswith("unpaywall"):
+                unpaywall_hits += 1
+        else:
+            if pj:
+                pj["abs"] += 1
+
+    print("\n================= PER-JOURNAL =================")
+    print(f"{'Journal':<12}{'total':>6}{'fulltext':>10}{'abs-only':>10}{'no-DOI':>8}")
+    for abbr, c in per_journal.items():
+        print(f"{abbr:<12}{c['total']:>6}{c['ft']:>10}{c['abs']:>10}{c['nodoi']:>8}")
+
+    print("\n================= TOP 10 SCORED =================")
+    print(f"{'#':>2} {'score':>5} {'jrnl':<11} {'full text?':<22} {'sent?':<6} title")
+    for i, a in enumerate(top, 1):
+        av = a.get("_avail", {})
+        ftxt = (av.get("via") or "abstract-only") if av.get("has_fulltext") else "abstract-only"
+        parts = "+".join(f"{k}:{v}" for k, v in a.get("_score_parts", {}).items())
+        was_sent = "SENT" if fr.key(a) in sent else ""
+        print(f"{i:>2} {a['_score']:>5} {a.get('journal_abbr',''):<11} "
+              f"{ftxt:<22} {was_sent:<6} {a.get('title','')[:60]}")
+        print(f"       ({parts})")
+
+    print("\n================= SUMMARY =================")
+    print(f"Articles (unique, {SINCE}d):     {len(uniq)}")
+    print(f"  with a DOI:                {with_doi}")
+    print(f"  full text available:       {ft_total}  "
+          f"({100*ft_total//max(1,len(uniq))}% of all, "
+          f"{100*ft_total//max(1,with_doi)}% of DOI'd)")
+    print(f"  abstract-only:             {len(uniq)-ft_total}")
+    print(f"Unpaywall hit rate:          {unpaywall_hits}/{with_doi} with-DOI "
+          f"({100*unpaywall_hits//max(1,with_doi)}%)")
+    print(f"Already-sent (excluded):     {sum(1 for a in uniq if fr.key(a) in sent)}")
+    print(f"Top-5 picks full-text:       "
+          f"{sum(1 for a in top[:5] if a.get('_avail',{}).get('has_fulltext'))}/5")
+
+
 def run_sample_quiz():
     """Write a standalone sample interactive quiz page to docs/<cme-subdir>/
     sample.html for local design preview (no API, no email). Uses the active
@@ -335,6 +483,36 @@ def run_sample_quiz():
     out.write_text(brandize(build_quiz_page(sample, datetime.now())), encoding="utf-8")
     logger.info(f"Wrote sample quiz page → {out}")
     print(str(out))
+
+
+def run_preview_deepdive():
+    """Build ONLY the Deep Dive page as a standalone local HTML file for review —
+    no audio, no email, no publish/push. Uses the active specialty's prompt +
+    branding, so the file is self-contained and safe to forward to a colleague."""
+    logger.info("=" * 50)
+    logger.info(f"DEEP DIVE PREVIEW [{SPECIALTY}] — HTML only, no email/push")
+    logger.info("=" * 50)
+    if MODE != "api":
+        logger.error("Deep Dive needs MODE=api and ANTHROPIC_API_KEY.")
+        sys.exit(1)
+    all_articles = _fetch_all_articles(_digest_since())
+    selected = _select_digest(all_articles)
+    logger.info(f"Selected {len(selected)} articles for the Deep Dive preview")
+    if not selected:
+        logger.error("No open-access articles selected — nothing to summarize.")
+        sys.exit(1)
+    from summary_generator import generate_summaries
+    summaries = generate_summaries(selected)
+    if not summaries:
+        logger.error("No Deep Dive summaries generated (check ANTHROPIC_API_KEY).")
+        sys.exit(1)
+    from deepdive_builder import build_deepdive_page
+    from branding import brandize
+    html = brandize(build_deepdive_page(summaries, datetime.now()))
+    f = f"preview_{SPECIALTY}_deepdive_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+    Path(f).write_text(html, encoding="utf-8")
+    logger.info(f"Deep Dive preview: {f} ({len(summaries)} articles)")
+    print(f)
 
 
 # ── Specialty helpers ────────────────────────────────────────────────────────
@@ -539,6 +717,8 @@ if __name__ == "__main__":
         "preview-sat": lambda: run_saturday(preview=True),
         "preview-month": lambda: run_monthly(preview=True),
         "sample-quiz": run_sample_quiz,
+        "preview-deepdive": run_preview_deepdive,
+        "scan": run_scan,
     }
 
     if cmd in cmds:
