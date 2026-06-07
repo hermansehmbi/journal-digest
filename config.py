@@ -108,6 +108,15 @@ DEEPDIVE_MAX_TOKENS = int(_spec("deepdive_max_tokens", 1800))
 SELECTION_MODE = _spec("selection_mode", "per_journal")
 SELECTION_LOOKBACK_DAYS = int(_spec("selection_lookback_days", 28))
 DIGEST_TOP_N = int(_spec("digest_max_articles", 5))
+# How much retrievable full text boosts an article's score. Set to 0 to make
+# selection indifferent to whether WE can fetch the full text (e.g. anesthesia —
+# the email link still gets the reader the full paper; abstract-based deep dives
+# are acceptable). EP keeps the default to prefer fetchable articles.
+SCORE_FULLTEXT_WEIGHT = int(_spec("fulltext_score_weight", 3))
+# Cap on how many featured articles may come from one journal (0 = uncapped).
+# Anesthesia uses 1 (one best per journal → 8-10 across the registry); EP leaves
+# it uncapped so the best 5 overall can include several from one journal.
+MAX_PER_JOURNAL = int(_spec("max_per_journal", 0))
 
 # ── Audience phrasing (podcast script + Deep Dive tone) ──────────────────────
 # Used to address the reader in AI-written prose ("practicing anesthesiologists",

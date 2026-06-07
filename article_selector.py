@@ -210,9 +210,10 @@ def _tier1_abbrs() -> set:
 
 def score_article(art: dict, avail: dict, now: datetime, tier1: set) -> dict:
     """Return {"score": int, "parts": {...}} for one article."""
+    from config import SCORE_FULLTEXT_WEIGHT
     parts = {"base": 1}
-    if avail.get("has_fulltext"):
-        parts["fulltext"] = 3
+    if avail.get("has_fulltext") and SCORE_FULLTEXT_WEIGHT:
+        parts["fulltext"] = SCORE_FULLTEXT_WEIGHT
     if avail.get("is_oa") or art.get("is_open_access"):
         parts["open_access"] = 2
     if art.get("journal_abbr") in tier1:
@@ -232,11 +233,13 @@ def score_article(art: dict, avail: dict, now: datetime, tier1: set) -> dict:
 
 
 def select_top_scored(articles: list, avail_map: dict, sent_keys: set,
-                      top_n: int = 5):
+                      top_n: int = 5, max_per_journal: int | None = None):
     """Score every (not-already-sent) article and return (top_n, all_ranked).
 
     Each returned article is annotated with ``_score``, ``_score_parts`` and
-    ``_avail``. Ranking: score, then impact factor, then recency.
+    ``_avail``. Ranking: score, then impact factor, then recency. If
+    ``max_per_journal`` is set, no more than that many picks come from one
+    journal (so a single high-impact journal can't monopolize the digest).
     """
     import fulltext_resolver as fr
     now = datetime.now()
@@ -262,4 +265,18 @@ def select_top_scored(articles: list, avail_map: dict, sent_keys: set,
         return (a["_score"], a.get("impact_factor", 0) or 0, d or datetime.min)
 
     ranked.sort(key=_sort_key, reverse=True)
-    return ranked[:top_n], ranked
+
+    if max_per_journal:
+        per: dict = {}
+        top = []
+        for a in ranked:
+            j = a.get("journal_abbr", "")
+            if per.get(j, 0) >= max_per_journal:
+                continue
+            per[j] = per.get(j, 0) + 1
+            top.append(a)
+            if len(top) >= top_n:
+                break
+    else:
+        top = ranked[:top_n]
+    return top, ranked

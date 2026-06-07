@@ -107,7 +107,7 @@ def _select_digest(all_articles: list) -> list:
                     already-sent, take the top-N overall (EP).
     "per_journal" → original best-OA-per-journal selection (anesthesia).
     """
-    from config import SELECTION_MODE, DIGEST_TOP_N
+    from config import SELECTION_MODE, DIGEST_TOP_N, MAX_PER_JOURNAL
     if SELECTION_MODE != "scored":
         return select_digest_articles(all_articles, per_journal=1, max_total=10)
 
@@ -123,7 +123,8 @@ def _select_digest(all_articles: list) -> list:
     fr.resolve_dois(uniq)                 # fill missing DOIs (Crossref)
     avail = fr.availability_map(uniq)     # Unpaywall + PMC
     sent = _load_sent_keys()
-    top, _ = select_top_scored(uniq, avail, sent, top_n=DIGEST_TOP_N)
+    top, _ = select_top_scored(uniq, avail, sent, top_n=DIGEST_TOP_N,
+                               max_per_journal=(MAX_PER_JOURNAL or None))
     ft = sum(1 for a in top if a.get("_avail", {}).get("has_fulltext"))
     logger.info(f"Scored selection: {len(top)} articles ({ft} with full text), "
                 f"excluding {sum(1 for a in uniq if fr.key(a) in sent)} already-sent")
@@ -364,7 +365,7 @@ def run_scan():
     (only Haiku for Tier-2 filtering) — cheap, to judge the full-text strategy."""
     import fulltext_resolver as fr
     from article_selector import select_top_scored
-    SINCE = 28
+    SINCE = _digest_since()
     logger.info("=" * 50)
     logger.info(f"SCAN [{SPECIALTY}] — {SINCE}-day window, no summaries")
     logger.info("=" * 50)
@@ -393,7 +394,9 @@ def run_scan():
     logger.info("Checking full-text availability (Unpaywall + PMC) …")
     avail = fr.availability_map(uniq)
     sent = _load_sent_keys()
-    top, ranked = select_top_scored(uniq, avail, sent, top_n=10)
+    from config import DIGEST_TOP_N, MAX_PER_JOURNAL
+    top, ranked = select_top_scored(uniq, avail, sent, top_n=max(10, DIGEST_TOP_N),
+                                    max_per_journal=(MAX_PER_JOURNAL or None))
 
     # Tally per journal.
     with_doi = ft_total = unpaywall_hits = 0
@@ -441,8 +444,9 @@ def run_scan():
     print(f"Unpaywall hit rate:          {unpaywall_hits}/{with_doi} with-DOI "
           f"({100*unpaywall_hits//max(1,with_doi)}%)")
     print(f"Already-sent (excluded):     {sum(1 for a in uniq if fr.key(a) in sent)}")
-    print(f"Top-5 picks full-text:       "
-          f"{sum(1 for a in top[:5] if a.get('_avail',{}).get('has_fulltext'))}/5")
+    print(f"Top-{DIGEST_TOP_N} picks full-text:       "
+          f"{sum(1 for a in top[:DIGEST_TOP_N] if a.get('_avail',{}).get('has_fulltext'))}"
+          f"/{DIGEST_TOP_N}")
 
 
 def run_sample_quiz():

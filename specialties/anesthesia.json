@@ -176,5 +176,7 @@
   "deepdive_max_tokens": 2200,
   "selection_mode": "scored",
   "selection_lookback_days": 28,
-  "digest_max_articles": 5
+  "digest_max_articles": 10,
+  "fulltext_score_weight": 0,
+  "max_per_journal": 1
 }
