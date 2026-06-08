@@ -27,6 +27,14 @@ from pathlib import Path
 SPECIALTY = os.environ.get("SPECIALTY", "anesthesia").strip().lower()
 
 SPECIALTIES_DIR = Path(__file__).parent / "specialties"
+
+
+def cache_path(name: str) -> str:
+    """Path for a throwaway cache file, namespaced per specialty under .cache/.
+    (Keeps the project root tidy; these are all gitignored and regenerable.)"""
+    d = Path(".cache") / os.environ.get("SPECIALTY", "anesthesia").strip().lower()
+    d.mkdir(parents=True, exist_ok=True)
+    return str(d / name)
 _SPEC_PATH = SPECIALTIES_DIR / f"{SPECIALTY}.json"
 if not _SPEC_PATH.exists():
     available = ", ".join(sorted(p.stem for p in SPECIALTIES_DIR.glob("*.json")))

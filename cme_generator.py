@@ -74,7 +74,7 @@ def generate_cme_questions(articles: list, num_questions: int = 10,
     # can quote real statistics. Open access → parsed Results/Discussion/etc.;
     # paywalled → abstract only.
     try:
-        from fulltext_fetcher import get_article_text
+        from fulltext_resolver import get_fulltext as get_article_text
     except Exception:
         get_article_text = None
 

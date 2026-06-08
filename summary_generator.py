@@ -263,8 +263,16 @@ def _key(article: dict) -> str:
     return "url:" + url if url else ""
 
 
+def _cache_file() -> str:
+    try:
+        import config
+        return config.cache_path(CACHE_FILE)
+    except Exception:
+        return CACHE_FILE
+
+
 def _load_cache() -> dict:
-    p = Path(CACHE_FILE)
+    p = Path(_cache_file())
     if p.exists():
         try:
             return json.loads(p.read_text(encoding="utf-8"))
@@ -275,6 +283,6 @@ def _load_cache() -> dict:
 
 def _save_cache(cache: dict):
     try:
-        Path(CACHE_FILE).write_text(json.dumps(cache), encoding="utf-8")
+        Path(_cache_file()).write_text(json.dumps(cache), encoding="utf-8")
     except Exception as e:
-        logger.warning(f"Could not write {CACHE_FILE}: {e}")
+        logger.warning(f"Could not write {_cache_file()}: {e}")

@@ -54,9 +54,10 @@ from config import (
     JOURNALS, BONUS_PODCASTS, RECIPIENT_EMAIL, SENDER_EMAIL,
     MODE, INITIAL_LOOKBACK_DAYS, SPECIALTY, SPECIALTY_NAME,
     AUDIO_ENABLED, DEEPDIVE_ENABLED, PUBLISH_ENABLED, AUDIO_DELIVERY,
+    cache_path,
 )
 from fetcher import fetch_articles, fetch_podcast_episodes, fetch_bonus_podcasts
-from article_selector import select_digest_articles
+import article_selector
 from email_builder import build_digest_email, build_saturday_email, build_monthly_email
 from email_sender import send_email
 from moc_tracker import log_articles, log_cme, update_summary, MOC_FILE
@@ -66,8 +67,9 @@ import gsheets
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
-# State files are namespaced per specialty so anesthesia and EP never collide.
-CACHE_FILE = f"articles_cache_{SPECIALTY}.json"
+# Regenerable article cache (under .cache/<specialty>/). The Saturday hand-off
+# files (monday_featured/weekly_summaries/sent) stay at the repo root.
+CACHE_FILE = cache_path("articles_cache.json")
 # The EXACT final list of articles emailed in the most recent Monday digest.
 # Saturday CME reads ONLY from this file — no re-fetching, no new articles.
 MONDAY_FEATURED_FILE = f"monday_featured_{SPECIALTY}.json"
@@ -92,43 +94,14 @@ def _fetch_all_articles(since_days: int) -> list:
 
 
 def _digest_since() -> int:
-    """Look-back window for the digest. Scored mode uses the multi-week window;
-    per-journal mode keeps the original weekly cadence (>=7 days)."""
-    from config import SELECTION_MODE, SELECTION_LOOKBACK_DAYS
-    if SELECTION_MODE == "scored":
-        return SELECTION_LOOKBACK_DAYS
-    return INITIAL_LOOKBACK_DAYS if INITIAL_LOOKBACK_DAYS > 7 else 7
+    """Look-back window for the digest (the scored selection's multi-week window)."""
+    from config import SELECTION_LOOKBACK_DAYS
+    return SELECTION_LOOKBACK_DAYS
 
 
 def _select_digest(all_articles: list) -> list:
-    """Pick the articles to feature, per the specialty's selection_mode.
-
-    "scored"      → resolve DOIs, check full-text availability, score, exclude
-                    already-sent, take the top-N overall (EP).
-    "per_journal" → original best-OA-per-journal selection (anesthesia).
-    """
-    from config import SELECTION_MODE, DIGEST_TOP_N, MAX_PER_JOURNAL
-    if SELECTION_MODE != "scored":
-        return select_digest_articles(all_articles, per_journal=1, max_total=10)
-
-    import fulltext_resolver as fr
-    from article_selector import select_top_scored
-    seen, uniq = set(), []
-    for a in all_articles:
-        k = fr.key(a)
-        if k in seen:
-            continue
-        seen.add(k)
-        uniq.append(a)
-    fr.resolve_dois(uniq)                 # fill missing DOIs (Crossref)
-    avail = fr.availability_map(uniq)     # Unpaywall + PMC
-    sent = _load_sent_keys()
-    top, _ = select_top_scored(uniq, avail, sent, top_n=DIGEST_TOP_N,
-                               max_per_journal=(MAX_PER_JOURNAL or None))
-    ft = sum(1 for a in top if a.get("_avail", {}).get("has_fulltext"))
-    logger.info(f"Scored selection: {len(top)} articles ({ft} with full text), "
-                f"excluding {sum(1 for a in uniq if fr.key(a) in sent)} already-sent")
-    return top
+    """Pick the featured articles (scored selection lives in article_selector)."""
+    return article_selector.select_for_digest(all_articles, _load_sent_keys())
 
 
 def run_digest(preview=False):

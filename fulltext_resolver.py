@@ -26,6 +26,7 @@ import json
 import logging
 import unicodedata
 import concurrent.futures
+from datetime import datetime
 from pathlib import Path
 
 import httpx
@@ -37,7 +38,34 @@ _TIMEOUT = 25
 UNPAYWALL = "https://api.unpaywall.org/v2"
 NCBI_ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 CROSSREF_WORKS = "https://api.crossref.org/works"
-DOI_CACHE_FILE = "doi_cache.json"
+_AVAIL_TTL_DAYS = 7   # re-check availability weekly (articles enter PMC over time)
+
+
+# ── Generic on-disk JSON cache (under .cache/<specialty>/) ───────────────────
+
+def _cpath(name: str) -> str:
+    try:
+        import config
+        return config.cache_path(name)
+    except Exception:
+        return name
+
+
+def _load_json(name: str) -> dict:
+    p = Path(_cpath(name))
+    if p.exists():
+        try:
+            return json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_json(name: str, data: dict):
+    try:
+        Path(_cpath(name)).write_text(json.dumps(data), encoding="utf-8")
+    except Exception:
+        pass
 
 
 def key(article: dict) -> str:
@@ -115,7 +143,7 @@ def _crossref_doi_by_title(title: str, issn: str) -> str:
 def resolve_dois(articles: list, workers: int = 8) -> int:
     """For articles lacking a DOI, resolve one via Crossref (title + ISSN) and
     set article['doi'] in place. Cached on disk. Returns how many were resolved."""
-    cache = _load_doi_cache()
+    cache = _load_json("doi_cache.json")
     todo = [a for a in articles if not ff._doi(a)]
     if not todo:
         return 0
@@ -136,26 +164,9 @@ def resolve_dois(articles: list, workers: int = 8) -> int:
             if doi:
                 a["doi"] = doi
                 resolved += 1
-    _save_doi_cache(cache)
+    _save_json("doi_cache.json", cache)
     logger.info(f"DOI resolver: filled {resolved}/{len(todo)} missing DOIs via Crossref")
     return resolved
-
-
-def _load_doi_cache() -> dict:
-    p = Path(DOI_CACHE_FILE)
-    if p.exists():
-        try:
-            return json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            return {}
-    return {}
-
-
-def _save_doi_cache(cache: dict):
-    try:
-        Path(DOI_CACHE_FILE).write_text(json.dumps(cache), encoding="utf-8")
-    except Exception:
-        pass
 
 
 # ── Source lookups ───────────────────────────────────────────────────────────
@@ -257,16 +268,49 @@ def availability(article: dict) -> dict:
     return res
 
 
+_AVAIL_FIELDS = ("has_doi", "is_oa", "has_fulltext", "oa_blocked", "via")
+
+
+def _avail_fresh(entry: dict) -> bool:
+    ts = entry.get("ts")
+    if not ts:
+        return False
+    try:
+        return (datetime.now() - datetime.fromisoformat(ts)).days < _AVAIL_TTL_DAYS
+    except Exception:
+        return False
+
+
 def availability_map(articles: list, workers: int = 8) -> dict:
-    """Concurrent availability() for many articles, keyed by key(article)."""
+    """availability() for many articles, keyed by key(article). Cached per DOI
+    under .cache/<specialty>/avail_cache.json with a weekly TTL, so repeat scans/
+    digests don't re-hit Unpaywall/PMC for articles seen recently."""
+    cache = _load_json("avail_cache.json")
     out: dict = {}
+    to_compute = []
+    for a in articles:
+        doi = ff._doi(a)
+        ent = cache.get(doi.lower()) if doi else None
+        if ent and _avail_fresh(ent):
+            out[key(a)] = {f: ent.get(f) for f in _AVAIL_FIELDS}
+        else:
+            to_compute.append(a)
 
-    def work(a):
-        return key(a), availability(a)
+    computed = {}
+    if to_compute:
+        def work(a):
+            return key(a), ff._doi(a), availability(a)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            for k, doi, res in ex.map(work, to_compute):
+                out[k] = res
+                if doi:
+                    computed[doi.lower()] = {**res, "ts": datetime.now().isoformat()}
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
-        for k, v in ex.map(work, articles):
-            out[k] = v
+    if computed:
+        cache.update(computed)
+        _save_json("avail_cache.json", cache)
+    logger.info(f"Availability: {len(articles)-len(to_compute)} cached, "
+                f"{len(to_compute)} freshly checked")
     return out
 
 

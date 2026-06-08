@@ -10,11 +10,15 @@ podcast_script.txt
 # monday_featured_*.json and weekly_summaries_*.json are intentionally TRACKED
 # (committed by the Monday run) so the Saturday CME hand-off survives a wiped
 # Actions cache. The rest are best-effort optimization caches and stay ignored.
+# All regenerable caches now live under .cache/<specialty>/ (legacy root names
+# kept ignored for older checkouts).
+.cache/
 articles_cache*.json
 fulltext_cache*.json
 summaries_cache*.json
 doi_cache*.json
 relevance_cache*.json
+avail_cache*.json
 self_assessment_tracker*.xlsx
 moc_tracker*.xlsx
 .env

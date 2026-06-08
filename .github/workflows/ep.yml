@@ -75,10 +75,7 @@ jobs:
       - name: Restore article cache
         uses: actions/cache/restore@v4
         with:
-          path: |
-            articles_cache_ep.json
-            fulltext_cache_ep.json
-            summaries_cache_ep.json
+          path: .cache/ep
           key: cache-ep-${{ github.run_id }}
           restore-keys: cache-ep-
 
@@ -128,10 +125,7 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: |
-            articles_cache_ep.json
-            fulltext_cache_ep.json
-            summaries_cache_ep.json
+          path: .cache/ep
           key: cache-ep-${{ github.run_id }}
 
       - name: Save MOC tracker

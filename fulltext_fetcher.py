@@ -28,7 +28,6 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-CACHE_FILE = "fulltext_cache.json"
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 MAX_TEXT = 18000  # cap stored/returned text (raised so Methods + full Results,
                   # with their sample sizes and statistics, reach the summarizer)
@@ -53,68 +52,10 @@ _SECTION_ORDER = [
 ]
 
 
-def get_article_text(article: dict) -> dict:
-    """Return {"source", "is_open_access", "text"} for one article (cached).
-
-    source is "fulltext" (OA full text parsed), "abstract" (abstract only), or
-    "none" (nothing available).
-    """
-    key = _key(article)
-    cache = _load_cache()
-    if key and key in cache:
-        return cache[key]
-
-    result = _fetch(article)
-
-    if key:
-        cache[key] = result
-        _save_cache(cache)
-    return result
-
-
-def get_many(articles: list) -> list:
-    """Fetch (cached) full text for several articles; pairs with the inputs."""
-    return [get_article_text(a) for a in articles]
-
-
-# ── Fetch pipeline ───────────────────────────────────────────────────────────
-
-def _fetch(article: dict) -> dict:
-    doi = _doi(article)
-    rec = _epmc_lookup(doi) if doi else None
-
-    if rec:
-        is_oa = rec.get("isOpenAccess") == "Y"
-        pmcid = rec.get("pmcid")
-        if is_oa and pmcid:
-            xml = _epmc_fulltext(pmcid)
-            sections = _parse_jats(xml) if xml else {}
-            if sections:
-                text = _format_sections(sections)
-                if text.strip():
-                    logger.info(f"  Full text via Europe PMC: {pmcid} "
-                                f"({len(text)} chars)")
-                    return {"source": "fulltext", "is_open_access": True,
-                            "text": text[:MAX_TEXT]}
-        # PMC full text unavailable — try the publisher page directly (works for
-        # open publishers like Radcliffe/AER; OUP/AHA/Elsevier usually block bots).
-        scraped = _scrape_publisher(article)
-        if scraped:
-            return {"source": "fulltext", "is_open_access": is_oa, "text": scraped}
-        abstract = _clean(rec.get("abstractText", "")) or _clean(article.get("abstract", ""))
-        logger.info(f"  Abstract only for DOI {doi} (open_access={is_oa})")
-        return {"source": "abstract" if abstract else "none",
-                "is_open_access": is_oa, "text": abstract[:MAX_TEXT]}
-
-    # No Europe PMC record — try the publisher page, then fall back to abstract.
-    scraped = _scrape_publisher(article)
-    if scraped:
-        return {"source": "fulltext",
-                "is_open_access": bool(article.get("is_open_access")), "text": scraped}
-    abstract = _clean(article.get("abstract", ""))
-    return {"source": "abstract" if abstract else "none",
-            "is_open_access": bool(article.get("is_open_access")),
-            "text": abstract[:MAX_TEXT]}
+# NOTE: this module is now a library of full-text helpers used by
+# fulltext_resolver (the single full-text entry point). The old get_article_text/
+# _fetch/get_many pipeline + its cache were removed — resolver.get_fulltext + the
+# availability cache supersede them.
 
 
 # ── Publisher-page fallback (best-effort HTML scrape) ─────────────────────────
@@ -314,20 +255,3 @@ def _clean(text: str) -> str:
     text = re.sub(r"<[^>]+>", " ", text)
     text = re.sub(r"\s+", " ", text)
     return text.strip()
-
-
-def _load_cache() -> dict:
-    p = Path(CACHE_FILE)
-    if p.exists():
-        try:
-            return json.loads(p.read_text(encoding="utf-8"))
-        except Exception:
-            return {}
-    return {}
-
-
-def _save_cache(cache: dict):
-    try:
-        Path(CACHE_FILE).write_text(json.dumps(cache), encoding="utf-8")
-    except Exception as e:
-        logger.warning(f"Could not write {CACHE_FILE}: {e}")

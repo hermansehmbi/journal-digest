@@ -35,10 +35,9 @@ _ABSTRACT_CHARS = 600
 def _cache_file() -> str:
     try:
         import config
-        sp = config.SPECIALTY
+        return config.cache_path("relevance_cache.json")
     except Exception:
-        sp = "default"
-    return f"relevance_cache_{sp}.json"
+        return "relevance_cache.json"
 
 
 def _akey(art: dict) -> str:
